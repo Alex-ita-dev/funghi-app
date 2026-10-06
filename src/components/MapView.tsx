@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
+import { type MapLayer } from "../lib/maps";
 import {
   type Car,
   type Coordinate,
@@ -16,6 +17,8 @@ export type MapViewRequest = {
   bounds?: Coordinate[];
 };
 type Props = {
+  baseLayer: MapLayer;
+  onFallback: () => void;
   fix: Fix | null;
   car: Car | null;
   finds: Find[];
@@ -46,6 +49,7 @@ export default function MapView(props: Props) {
   const latest = useRef(props);
   latest.current = props;
   const [tilesFailed, setTilesFailed] = useState(false);
+  const [tileAttempt, setTileAttempt] = useState(0);
   useEffect(() => {
     const m = L.map(container.current!, {
       zoomControl: false,
@@ -56,16 +60,6 @@ export default function MapView(props: Props) {
     map.current = m;
     L.control.zoom({ position: "topright" }).addTo(m);
     L.control.scale({ imperial: false, position: "bottomleft" }).addTo(m);
-    const tiles = L.tileLayer(
-      "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
-      {
-        maxZoom: 19,
-        attribution:
-          '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">OpenStreetMap</a>',
-      },
-    ).addTo(m);
-    tiles.on("tileerror", () => setTilesFailed(true));
-    tiles.on("tileload", () => setTilesFailed(false));
     layers.current = L.layerGroup().addTo(m);
     m.on("click", (e: L.LeafletMouseEvent) => {
       if (latest.current.picking)
@@ -79,6 +73,37 @@ export default function MapView(props: Props) {
       map.current = null;
     };
   }, []);
+  useEffect(() => {
+    const m = map.current;
+    const source = props.baseLayer;
+    if (!m || !source.url) return;
+    let alive = true;
+    const failedTiles = new Set<HTMLElement>();
+    setTilesFailed(false);
+    const tiles = L.tileLayer(source.url, {
+      maxZoom: 19,
+      maxNativeZoom: source.maxNativeZoom,
+      attribution: source.attribution,
+      keepBuffer: 1,
+    });
+    tiles.on("tileerror", (event: L.TileErrorEvent) => {
+      failedTiles.add(event.tile);
+      if (alive) setTilesFailed(true);
+    });
+    tiles.on("tileunload", (event: L.TileEvent) => {
+      failedTiles.delete(event.tile);
+      if (alive) setTilesFailed(failedTiles.size > 0);
+    });
+    tiles.on("load", () => {
+      if (alive) setTilesFailed(failedTiles.size > 0);
+    });
+    tiles.addTo(m);
+    return () => {
+      alive = false;
+      tiles.off();
+      tiles.remove();
+    };
+  }, [props.baseLayer, tileAttempt]);
   useEffect(() => {
     const layer = layers.current;
     if (!layer) return;
@@ -164,8 +189,16 @@ export default function MapView(props: Props) {
       />
       {tilesFailed && (
         <div className="map-error" role="status">
-          Cartografia non disponibile. Punti e tracce restano visibili. Serve
-          una connessione per caricare la mappa.
+          <span>
+            Cartografia incompleta o non disponibile. Punti e tracce restano
+            visibili; per nuove aree serve internet.
+          </span>
+          {props.baseLayer.id !== "street" && (
+            <button onClick={props.onFallback}>Usa stradale</button>
+          )}
+          <button onClick={() => setTileAttempt((value) => value + 1)}>
+            Riprova mappa
+          </button>
         </div>
       )}
     </>

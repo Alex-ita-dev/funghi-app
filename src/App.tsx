@@ -20,6 +20,8 @@ import {
   Flag,
   Footprints,
   Layers,
+  Maximize2,
+  Minimize2,
   Leaf,
   Map,
   MapPin,
@@ -43,6 +45,17 @@ import { Modal } from "./components/Modal";
 import MapView, { type MapViewRequest } from "./components/MapView";
 import { useData } from "./hooks/useData";
 import { useGps } from "./hooks/useGps";
+import { useHeading } from "./hooks/useHeading";
+import { CompassControl } from "./components/CompassControl";
+import { MapLayerPicker } from "./components/MapLayerPicker";
+import { SosPanel } from "./components/SosPanel";
+import { GpsSettings } from "./components/GpsSettings";
+import {
+  mapPreferenceKey,
+  readMapPreference,
+  resolveMapLayer,
+  type MapLayerId,
+} from "./lib/maps";
 import {
   addFix,
   clock,
@@ -100,6 +113,21 @@ export default function App() {
   const [detail, setDetail] = useState<Find | null>(null);
   const [confirm, setConfirm] = useState<Confirm | null>(null);
   const [help, setHelp] = useState(false);
+  const [sos, setSos] = useState(false);
+  const [layerPicker, setLayerPicker] = useState(false);
+  const [layerId, setLayerId] = useState<MapLayerId>(readMapPreference);
+  const [fullscreen, setFullscreen] = useState(false);
+  const mapCardRef = useRef<HTMLDivElement>(null);
+  const baseLayer = resolveMapLayer(layerId);
+  function selectLayer(id: MapLayerId) {
+    const selected = resolveMapLayer(id).id;
+    setLayerId(selected);
+    try {
+      localStorage.setItem(mapPreferenceKey, selected);
+    } catch {
+      /* Preference is optional; the journal is unaffected. */
+    }
+  }
   const [returning, setReturning] = useState(false);
   const [selectedTrip, setSelectedTrip] = useState<string | null>(null);
   const [query, setQuery] = useState("");
@@ -122,6 +150,49 @@ export default function App() {
     [update],
   );
   const gps = useGps(handleFix);
+  const heading = useHeading(gps.fix, now);
+  useEffect(() => {
+    if (heading.message) setNotice(heading.message);
+  }, [heading.message]);
+  useEffect(() => {
+    if (!fullscreen) return;
+    const previousFocus = document.activeElement as HTMLElement | null;
+    const overflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    mapCardRef.current
+      ?.querySelector<HTMLButtonElement>(".expand-map")
+      ?.focus();
+    const key = (e: KeyboardEvent) => {
+      if (document.querySelector("dialog[open]")) return;
+      if (e.key === "Escape") {
+        e.preventDefault();
+        setFullscreen(false);
+      }
+      if (e.key !== "Tab") return;
+      const controls = Array.from(
+        mapCardRef.current?.querySelectorAll<HTMLElement>(
+          'button:not(:disabled), a[href], [tabindex="0"]',
+        ) ?? [],
+      ).filter((el) => el.getClientRects().length);
+      const index = controls.indexOf(document.activeElement as HTMLElement);
+      if (e.shiftKey && index <= 0) {
+        e.preventDefault();
+        controls.at(-1)?.focus();
+      } else if (!e.shiftKey && (index === controls.length - 1 || index < 0)) {
+        e.preventDefault();
+        controls[0]?.focus();
+      }
+    };
+    window.addEventListener("keydown", key);
+    return () => {
+      document.body.style.overflow = overflow;
+      window.removeEventListener("keydown", key);
+      previousFocus?.focus();
+    };
+  }, [fullscreen]);
+  const locateForInfo = () => {
+    void gps.locate().catch(() => {});
+  };
   const active = data ? openTrip(data) : undefined;
   const viewedTrip = data?.trips.find((t) => t.id === selectedTrip) ?? active;
   const car = viewedTrip ? viewedTrip.car : (data?.car ?? null);
@@ -220,7 +291,12 @@ export default function App() {
         );
         return;
       }
-      action(fix);
+      action({
+        lat: fix.lat,
+        lng: fix.lng,
+        accuracy: fix.accuracy,
+        timestamp: fix.timestamp,
+      });
     } catch (error) {
       setNotice((error as Error).message);
     } finally {
@@ -407,7 +483,7 @@ export default function App() {
     0,
   );
   return (
-    <div className="app-shell">
+    <div className={`app-shell ${fullscreen ? "map-is-fullscreen" : ""}`}>
       <aside className="sidebar">
         <Brand />
         <div className="sidebar-section-label">IL TUO TACCUINO</div>
@@ -461,7 +537,7 @@ export default function App() {
             <strong>{tabs.find((t) => t.key === page)?.title}</strong>
           </div>
           <div className="topbar-right">
-            <span className="version-pill">PRIMA EDIZIONE</span>
+            <span className="version-pill">V2 · OUTDOOR</span>
             <button
               className="icon-button help-button"
               aria-label="Come funziona MycoTrail"
@@ -546,20 +622,48 @@ export default function App() {
             className={`explore-layout ${page !== "map" ? "hidden" : ""}`}
             aria-label="Esplora la mappa"
           >
-            <div className="map-card">
+            <div
+              ref={mapCardRef}
+              className={`map-card ${fullscreen ? "map-fullscreen" : ""}`}
+              role={fullscreen ? "region" : undefined}
+              aria-label={fullscreen ? "Mappa a schermo intero" : undefined}
+            >
               <div className="map-top-label">
-                <span className="map-layer">
+                <button
+                  className="map-layer layer-button"
+                  onClick={() => setLayerPicker(true)}
+                  aria-label={`Scegli mappa: ${baseLayer.name}`}
+                >
                   <Layers size={16} />
-                  Mappa sentieri
-                </span>
+                  {baseLayer.name}
+                </button>
                 <span className="map-area">
                   {gps.fix
                     ? `${gps.fix.lat.toFixed(3)}°, ${gps.fix.lng.toFixed(3)}°`
                     : "Vista iniziale · Valdarno"}
                 </span>
+                <div className="map-header-actions">
+                  <button className="sos-button" onClick={() => setSos(true)}>
+                    SOS
+                  </button>
+                  <button
+                    className="icon-button expand-map"
+                    title={fullscreen ? "Riduci mappa" : "Espandi mappa"}
+                    aria-label={fullscreen ? "Riduci mappa" : "Espandi mappa"}
+                    onClick={() => setFullscreen((value) => !value)}
+                  >
+                    {fullscreen ? (
+                      <Minimize2 size={21} />
+                    ) : (
+                      <Maximize2 size={21} />
+                    )}
+                  </button>
+                </div>
               </div>
               <div className="map-stage">
                 <MapView
+                  baseLayer={baseLayer}
+                  onFallback={() => selectLayer("street")}
                   fix={gps.fix}
                   car={car}
                   finds={data.finds}
@@ -569,6 +673,11 @@ export default function App() {
                   onPick={onPick}
                   onFind={setDetail}
                   visible={page === "map"}
+                />
+                <CompassControl
+                  degrees={heading.degrees}
+                  source={heading.source}
+                  onEnable={() => void heading.enable()}
                 />
                 <button
                   className="locate-button"
@@ -620,6 +729,92 @@ export default function App() {
                   </div>
                 )}
               </div>
+              {fullscreen && (
+                <div className="fullscreen-actions">
+                  <div className="fullscreen-status" role="status">
+                    {gps.pending
+                      ? "Ricerca GPS…"
+                      : fresh
+                        ? `GPS ±${Math.round(gps.fix!.accuracy)} m`
+                        : "GPS assente o da aggiornare"}{" "}
+                    ·{" "}
+                    {recording
+                      ? "Registrazione in corso · schermo acceso"
+                      : active
+                        ? "Uscita in pausa"
+                        : "Nessuna registrazione"}
+                  </div>
+                  {returning && (
+                    <p className="fullscreen-return">
+                      Auto e traccia inquadrate. La traccia può avere
+                      interruzioni; non è un itinerario calcolato.
+                    </p>
+                  )}
+                  <div className="fullscreen-action-grid">
+                    <button
+                      className="button secondary"
+                      disabled={busy}
+                      onClick={() => setChoose("find")}
+                    >
+                      <MapPin size={18} />
+                      Salva punto
+                    </button>
+                    <button
+                      className="button secondary"
+                      disabled={busy}
+                      onClick={() =>
+                        data.car
+                          ? setConfirm({
+                              title: "Aggiorna la posizione auto?",
+                              text: "Sostituirai il punto auto corrente. Le uscite concluse lo conserveranno.",
+                              label: "Scegli nuova posizione",
+                              action: () => setChoose("car"),
+                            })
+                          : setChoose("car")
+                      }
+                    >
+                      <CarFront size={18} />
+                      Salva auto
+                    </button>
+                    <button className="button secondary" onClick={goBack}>
+                      <Navigation size={18} />
+                      Torna auto
+                    </button>
+                    <button
+                      className="button primary"
+                      disabled={busy}
+                      onClick={
+                        recording
+                          ? () =>
+                              update((old) => ({
+                                ...old,
+                                trips: old.trips.map((t) =>
+                                  t.status === "active" ? pauseTrip(t) : t,
+                                ),
+                              }))
+                          : active
+                            ? resume
+                            : start
+                      }
+                    >
+                      {recording ? <Pause size={18} /> : <Play size={18} />}
+                      {recording
+                        ? "Pausa"
+                        : active
+                          ? "Riprendi"
+                          : "Avvia uscita"}
+                    </button>
+                  </div>
+                  {storageError && (
+                    <p role="alert" className="inline-error">
+                      {storageError}
+                      <button className="text-button" onClick={backup}>
+                        Esporta backup
+                      </button>
+                    </p>
+                  )}
+                </div>
+              )}
               <div className="map-legend">
                 <span>
                   <i className="legend-dot blue" />
@@ -1092,6 +1287,12 @@ export default function App() {
           )}
           {page === "settings" && (
             <section className="settings-grid">
+              <GpsSettings
+                permission={gps.permission}
+                pending={gps.pending}
+                error={gps.error}
+                onLocate={locateForInfo}
+              />
               <article className="settings-card">
                 <span className="action-icon green">
                   <ShieldCheck size={23} />
@@ -1136,22 +1337,25 @@ export default function App() {
                 <span className="action-icon orange">
                   <Navigation size={23} />
                 </span>
-                <h2>MycoTrail sul tuo iPhone.</h2>
+                <h2>MycoTrail sul tuo telefono.</h2>
                 <ol>
+                  <li>Apri MycoTrail nel tuo browser su iPhone o Android.</li>
                   <li>
-                    Apri il sito in <strong>Safari</strong>.
+                    Su iPhone cerca{" "}
+                    <strong>Condividi → Aggiungi alla schermata Home</strong>.
                   </li>
                   <li>
-                    Tocca <strong>Condividi</strong>.
-                  </li>
-                  <li>
-                    Scegli <strong>Aggiungi alla schermata Home</strong>.
+                    Su Android apri il menu del browser e cerca{" "}
+                    <strong>Installa app</strong> o{" "}
+                    <strong>Aggiungi a schermata Home</strong>.
                   </li>
                   <li>Apri MycoTrail e consenti la posizione.</li>
                 </ol>
                 <p>
                   Durante la registrazione tieni l’app in primo piano. Proviamo
                   a mantenere lo schermo acceso quando il browser lo consente.
+                  Il tracking affidabile a schermo spento richiederà la futura
+                  versione nativa, anche se installi questa web app sulla Home.
                 </p>
                 <button className="text-button" onClick={() => setHelp(true)}>
                   Leggi la guida
@@ -1159,17 +1363,18 @@ export default function App() {
                 </button>
               </article>
               <article className="settings-card wide">
-                <span className="mini-label">MYCOTRAIL · VERSIONE 0.2</span>
-                <h2>Un inizio, con i piedi per terra.</h2>
+                <span className="mini-label">MYCOTRAIL · V2 WEB</span>
+                <h2>Pronta per orientarti.</h2>
                 <p>
-                  La prima versione include mappa, GPS, uscite, ritrovamenti e
-                  backup. Account, Squad, foto e mappe scaricabili arriveranno
-                  nelle prossime fasi.
+                  Mappe selezionabili, bussola, schermo intero e SOS affiancano
+                  il taccuino e le uscite. Mappe scaricabili, pendenze numeriche
+                  e filtro versanti non sono ancora disponibili.
                 </p>
                 <p>
-                  La cartografia viene caricata da OpenStreetMap: il fornitore
-                  riceve le normali richieste web per l’area visualizzata. L’app
-                  non invia a un nostro server le tue fungaie o le tue tracce.
+                  La cartografia viene caricata da OpenTopoMap, OpenStreetMap o,
+                  se configurato, MapTiler: il fornitore riceve le normali
+                  richieste web per l’area visualizzata. L’app non invia a un
+                  nostro server le tue fungaie o le tue tracce.
                 </p>
               </article>
             </section>
@@ -1243,6 +1448,23 @@ export default function App() {
             </button>
           </div>
         </Modal>
+      )}
+      {layerPicker && (
+        <MapLayerPicker
+          selected={layerId}
+          onSelect={selectLayer}
+          onClose={() => setLayerPicker(false)}
+        />
+      )}
+      {sos && (
+        <SosPanel
+          fix={gps.fix}
+          now={now}
+          pending={gps.pending}
+          error={gps.error}
+          onLocate={locateForInfo}
+          onClose={() => setSos(false)}
+        />
       )}
       {draft && (
         <FindForm

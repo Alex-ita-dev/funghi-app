@@ -84,8 +84,9 @@ async function database(page: Page) {
 
 test.beforeEach(async ({ page }) => {
   // Avoid depending on public tile service availability in automated tests.
-  await page.route("https://tile.openstreetmap.org/**", (route) =>
-    route.abort(),
+  await page.route(
+    /https:\/\/(.*tile\.opentopomap\.org|tile\.openstreetmap\.org|api\.maptiler\.com)\/.*/,
+    (route) => route.abort(),
   );
 });
 

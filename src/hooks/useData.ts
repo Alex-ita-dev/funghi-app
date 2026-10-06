@@ -23,7 +23,7 @@ export function useData() {
       } catch {
         if (alive)
           setError(
-            "Impossibile leggere i dati salvati. Non verranno sovrascritti. Prova a riaprire MycoTrail in una finestra normale di Safari.",
+            "Impossibile leggere i dati salvati. Non verranno sovrascritti. Prova a riaprire MycoTrail in una finestra non privata del tuo browser.",
           );
       }
     };
