@@ -1,0 +1,173 @@
+import { useEffect, useRef, useState } from "react";
+import L from "leaflet";
+import "leaflet/dist/leaflet.css";
+import {
+  type Car,
+  type Coordinate,
+  type Find,
+  type Fix,
+  type Trip,
+  segments,
+} from "../lib/model";
+
+export type MapViewRequest = {
+  id: number;
+  center?: Coordinate;
+  bounds?: Coordinate[];
+};
+type Props = {
+  fix: Fix | null;
+  car: Car | null;
+  finds: Find[];
+  trip?: Trip;
+  request: MapViewRequest | null;
+  picking: boolean;
+  onPick: (p: Coordinate) => void;
+  onFind: (p: Find) => void;
+  visible: boolean;
+};
+const icons = {
+  car: '<svg viewBox="0 0 24 24"><path d="m5 10 2-5h10l2 5M4 10h16v8H4zM7 18v2m10-2v2M7 13h1m8 0h1"/></svg>',
+  find: '<svg viewBox="0 0 24 24"><path d="M3 13a9 9 0 0 1 18 0H3Zm6 0-1 7h8l-1-7M8 8h.01M15 7h.01M12 10h.01"/></svg>',
+  spot: '<svg viewBox="0 0 24 24"><path d="m12 3 2.8 5.7 6.2.9-4.5 4.4 1.1 6.2-5.6-3-5.6 3 1.1-6.2L3 9.6l6.2-.9Z"/></svg>',
+};
+function markerIcon(kind: keyof typeof icons) {
+  return L.divIcon({
+    className: "map-pin-wrap",
+    html: `<span class="map-pin ${kind}">${icons[kind]}</span>`,
+    iconSize: [38, 38],
+    iconAnchor: [19, 19],
+  });
+}
+export default function MapView(props: Props) {
+  const container = useRef<HTMLDivElement>(null);
+  const map = useRef<L.Map | null>(null);
+  const layers = useRef<L.LayerGroup | null>(null);
+  const latest = useRef(props);
+  latest.current = props;
+  const [tilesFailed, setTilesFailed] = useState(false);
+  useEffect(() => {
+    const m = L.map(container.current!, {
+      zoomControl: false,
+      center: [43.5206, 11.4874],
+      zoom: 13,
+      preferCanvas: true,
+    });
+    map.current = m;
+    L.control.zoom({ position: "topright" }).addTo(m);
+    L.control.scale({ imperial: false, position: "bottomleft" }).addTo(m);
+    const tiles = L.tileLayer(
+      "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
+      {
+        maxZoom: 19,
+        attribution:
+          '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">OpenStreetMap</a>',
+      },
+    ).addTo(m);
+    tiles.on("tileerror", () => setTilesFailed(true));
+    tiles.on("tileload", () => setTilesFailed(false));
+    layers.current = L.layerGroup().addTo(m);
+    m.on("click", (e: L.LeafletMouseEvent) => {
+      if (latest.current.picking)
+        latest.current.onPick({ lat: e.latlng.lat, lng: e.latlng.lng });
+    });
+    const observer = new ResizeObserver(() => m.invalidateSize());
+    observer.observe(container.current!);
+    return () => {
+      observer.disconnect();
+      m.remove();
+      map.current = null;
+    };
+  }, []);
+  useEffect(() => {
+    const layer = layers.current;
+    if (!layer) return;
+    layer.clearLayers();
+    if (props.trip)
+      for (const segment of segments(props.trip.points)) {
+        if (segment.length > 1) {
+          const points = segment.map((p) => [p.lat, p.lng] as L.LatLngTuple);
+          L.polyline(points, {
+            color: "#fffdf6",
+            weight: 8,
+            opacity: 0.9,
+          }).addTo(layer);
+          L.polyline(points, { color: "#bd581f", weight: 4 }).addTo(layer);
+        } else if (segment[0])
+          L.circleMarker([segment[0].lat, segment[0].lng], {
+            radius: 3,
+            color: "#bd581f",
+          }).addTo(layer);
+      }
+    if (props.car)
+      L.marker([props.car.lat, props.car.lng], {
+        icon: markerIcon("car"),
+        title: "Posizione auto",
+      })
+        .bindTooltip("La tua auto")
+        .addTo(layer);
+    for (const find of props.finds) {
+      const label = document.createElement("span");
+      label.textContent = find.title;
+      L.marker([find.lat, find.lng], {
+        icon: markerIcon(find.kind),
+        title: find.title,
+      })
+        .bindTooltip(label)
+        .on("click", (e) => {
+          L.DomEvent.stopPropagation(e);
+          latest.current.onFind(find);
+        })
+        .addTo(layer);
+    }
+    if (props.fix) {
+      const { lat, lng, accuracy } = props.fix;
+      L.circle([lat, lng], {
+        radius: accuracy,
+        color: "#3976aa",
+        weight: 1,
+        fillOpacity: 0.07,
+      }).addTo(layer);
+      L.circleMarker([lat, lng], {
+        radius: 7,
+        color: "#fff",
+        weight: 3,
+        fillColor: "#3976aa",
+        fillOpacity: 1,
+      })
+        .bindTooltip("Ultima posizione rilevata")
+        .addTo(layer);
+    }
+  }, [props.fix, props.car, props.finds, props.trip]);
+  useEffect(() => {
+    const m = map.current;
+    const request = props.request;
+    if (!m || !request) return;
+    m.invalidateSize();
+    if (request.bounds?.length)
+      m.fitBounds(L.latLngBounds(request.bounds.map((p) => [p.lat, p.lng])), {
+        padding: [45, 70],
+        maxZoom: 17,
+        animate: false,
+      });
+    else if (request.center)
+      m.setView([request.center.lat, request.center.lng], 16, {
+        animate: false,
+      });
+  }, [props.request, props.visible]);
+  return (
+    <>
+      <div
+        ref={container}
+        className={`leaflet-map ${props.picking ? "picking" : ""}`}
+        aria-label="Mappa interattiva"
+      />
+      {tilesFailed && (
+        <div className="map-error" role="status">
+          Cartografia non disponibile. Punti e tracce restano visibili. Serve
+          una connessione per caricare la mappa.
+        </div>
+      )}
+    </>
+  );
+}
