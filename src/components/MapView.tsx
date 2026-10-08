@@ -1,3 +1,4 @@
+import { usePreferences } from "../hooks/usePreferences";
 import { useEffect, useRef, useState } from "react";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
@@ -43,6 +44,7 @@ function markerIcon(kind: keyof typeof icons) {
   });
 }
 export default function MapView(props: Props) {
+  const { tr, settings } = usePreferences();
   const container = useRef<HTMLDivElement>(null);
   const map = useRef<L.Map | null>(null);
   const layers = useRef<L.LayerGroup | null>(null);
@@ -58,8 +60,6 @@ export default function MapView(props: Props) {
       preferCanvas: true,
     });
     map.current = m;
-    L.control.zoom({ position: "topright" }).addTo(m);
-    L.control.scale({ imperial: false, position: "bottomleft" }).addTo(m);
     layers.current = L.layerGroup().addTo(m);
     m.on("click", (e: L.LeafletMouseEvent) => {
       if (latest.current.picking)
@@ -73,6 +73,24 @@ export default function MapView(props: Props) {
       map.current = null;
     };
   }, []);
+  useEffect(() => {
+    if (!map.current) return;
+    const zoom = L.control
+      .zoom({
+        position: "topright",
+        zoomInTitle: tr("Ingrandisci"),
+        zoomOutTitle: tr("Riduci"),
+      })
+      .addTo(map.current);
+    const imperial = settings.preferences.distanceUnit === "imperial";
+    const scale = L.control
+      .scale({ metric: !imperial, imperial, position: "bottomleft" })
+      .addTo(map.current);
+    return () => {
+      zoom.remove();
+      scale.remove();
+    };
+  }, [tr, settings.preferences.distanceUnit]);
   useEffect(() => {
     const m = map.current;
     const source = props.baseLayer;
@@ -127,9 +145,9 @@ export default function MapView(props: Props) {
     if (props.car)
       L.marker([props.car.lat, props.car.lng], {
         icon: markerIcon("car"),
-        title: "Posizione auto",
+        title: tr("Posizione auto"),
       })
-        .bindTooltip("La tua auto")
+        .bindTooltip(tr("La tua auto"))
         .addTo(layer);
     for (const find of props.finds) {
       const label = document.createElement("span");
@@ -160,10 +178,10 @@ export default function MapView(props: Props) {
         fillColor: "#3976aa",
         fillOpacity: 1,
       })
-        .bindTooltip("Ultima posizione rilevata")
+        .bindTooltip(tr("Ultima posizione rilevata"))
         .addTo(layer);
     }
-  }, [props.fix, props.car, props.finds, props.trip]);
+  }, [props.fix, props.car, props.finds, props.trip, tr]);
   useEffect(() => {
     const m = map.current;
     const request = props.request;
@@ -185,19 +203,22 @@ export default function MapView(props: Props) {
       <div
         ref={container}
         className={`leaflet-map ${props.picking ? "picking" : ""}`}
-        aria-label="Mappa interattiva"
+        aria-label={tr("Mappa interattiva")}
       />
       {tilesFailed && (
         <div className="map-error" role="status">
           <span>
-            Cartografia incompleta o non disponibile. Punti e tracce restano
-            visibili; per nuove aree serve internet.
+            {" "}
+            {tr(
+              "Cartografia incompleta o non disponibile. Punti e tracce restano visibili; per nuove aree serve internet.",
+            )}{" "}
           </span>
           {props.baseLayer.id !== "street" && (
-            <button onClick={props.onFallback}>Usa stradale</button>
+            <button onClick={props.onFallback}>{tr("Usa stradale")}</button>
           )}
           <button onClick={() => setTileAttempt((value) => value + 1)}>
-            Riprova mappa
+            {" "}
+            {tr("Riprova mappa")}{" "}
           </button>
         </div>
       )}

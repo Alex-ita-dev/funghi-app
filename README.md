@@ -4,6 +4,7 @@
 
 ## Funzioni implementate
 
+- Preferenze locali, tema chiaro/scuro/sistema, sei lingue, preset paese e unità personalizzabili; onboarding e profilo cercatore facoltativo per utenti esistenti. Dettagli e verifiche in [SETTINGS_ONBOARDING.md](docs/SETTINGS_ONBOARDING.md).
 - Topografica OpenTopoMap (sentieri, curve di livello, rilievo), Stradale OSM e switch mobile. Satellite e Outdoor MapTiler disponibili solo dopo configurazione della chiave pubblica.
 - Bussola del dispositivo su richiesta, fallback direzione GPS e indicatore Nord.
 - Mappa a schermo intero con salva punto, salva auto, ritorno, registrazione e SOS.
@@ -30,6 +31,7 @@ npm run dev
 
 ```sh
 npm test          # logica GPS, segmenti, recupero e backup
+npm run typecheck # controllo TypeScript
 npm run build    # TypeScript e produzione PWA
 npm run preview  # prova della build e del service worker
 ```
@@ -82,6 +84,8 @@ Riferimenti: [Leaflet](https://leafletjs.com/reference.html), [policy tile OSM](
 - `src/lib/storage.ts`: adattatore IndexedDB e download.
 - `src/hooks`: GPS e stato persistente.
 - `src/components`: mappa, finestre di dialogo e identità visiva.
+- `src/lib/preferences.ts`, `src/hooks/usePreferences.tsx`: preferenze/profilo versionati nello stesso IndexedDB, chiave distinta dal taccuino.
+- `src/locales`, `src/lib/i18n.ts`, `src/lib/units.ts`: cataloghi offline e formattazione senza alterare i valori GPS salvati.
 - `src/App.tsx`: flussi dell'utente e schermate.
 - `docs/TEST_IPHONE.md`: protocollo di prova prima di usare l'app in un'uscita reale.
 

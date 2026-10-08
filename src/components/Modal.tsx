@@ -1,3 +1,4 @@
+import { usePreferences } from "../hooks/usePreferences";
 import { useEffect, useRef, type ReactNode } from "react";
 import { X } from "lucide-react";
 export function Modal({
@@ -9,6 +10,7 @@ export function Modal({
   children: ReactNode;
   onClose: () => void;
 }) {
+  const { tr } = usePreferences();
   const ref = useRef<HTMLDialogElement>(null);
   useEffect(() => {
     const el = ref.current!;
@@ -31,7 +33,11 @@ export function Modal({
       <div className="modal-inner">
         <header>
           <h2 id="modal-title">{title}</h2>
-          <button className="icon-button" aria-label="Chiudi" onClick={onClose}>
+          <button
+            className="icon-button"
+            aria-label={tr("Chiudi")}
+            onClick={onClose}
+          >
             <X size={21} />
           </button>
         </header>

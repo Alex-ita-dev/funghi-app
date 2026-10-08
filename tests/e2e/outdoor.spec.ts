@@ -1,4 +1,8 @@
 import { test, expect, type Page } from "@playwright/test";
+import { seedLegacy } from "./fixtures";
+test.beforeEach(async ({ page }) => {
+  await seedLegacy(page);
+});
 async function setup(page: Page, denied = false) {
   await page.route(
     /https:\/\/(.*tile\.opentopomap\.org|tile\.openstreetmap\.org|api\.maptiler\.com)\/.*/,

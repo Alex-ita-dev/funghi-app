@@ -1,4 +1,11 @@
 import { type Fix, distance } from "./model";
+import {
+  type Language,
+  type Preferences,
+  defaultSettings,
+} from "./preferences";
+import { translator } from "./i18n";
+import { formatDistance, formatAltitude, formatDateTime } from "./units";
 
 export type LiveFix = Fix & {
   altitude: number | null;
@@ -72,12 +79,24 @@ export function movementHeading(
     return null;
   return bearing(previous, current);
 }
-export const cardinal = (heading: number) =>
-  ["N", "NE", "E", "SE", "S", "SO", "O", "NO"][
+export const cardinal = (heading: number, language: Language = "it") =>
+  (language === "it" ||
+  language === "es" ||
+  language === "fr" ||
+  language === "pt"
+    ? ["N", "NE", "E", "SE", "S", "SO", "O", "NO"]
+    : language === "de"
+      ? ["N", "NO", "O", "SO", "S", "SW", "W", "NW"]
+      : ["N", "NE", "E", "SE", "S", "SW", "W", "NW"])[
     Math.round(normalizeDegrees(heading) / 45) % 8
   ];
 export const isRecent = (fix: Fix, now = Date.now()) =>
   now - fix.timestamp <= 30000 && fix.timestamp <= now + 5000;
-export function coordinateText(fix: LiveFix, now = Date.now()): string {
-  return `MycoTrail · ${isRecent(fix, now) ? "Posizione GPS" : "Ultima posizione nota (non attuale)"}\nLatitudine: ${fix.lat.toFixed(6)}\nLongitudine: ${fix.lng.toFixed(6)}\nPrecisione: ±${Math.round(fix.accuracy)} m\nQuota GPS: ${fix.altitude === null ? "non disponibile" : `${Math.round(fix.altitude)} m`}\nRilevata: ${new Date(fix.timestamp).toLocaleString("it-IT")}\nhttps://www.openstreetmap.org/?mlat=${fix.lat.toFixed(6)}&mlon=${fix.lng.toFixed(6)}#map=16/${fix.lat.toFixed(6)}/${fix.lng.toFixed(6)}`;
+export function coordinateText(
+  fix: LiveFix,
+  now = Date.now(),
+  preferences: Preferences = defaultSettings(["it-IT"], false).preferences,
+): string {
+  const tr = translator(preferences.language);
+  return `MycoTrail · ${tr(isRecent(fix, now) ? "Posizione GPS" : "Ultima posizione nota (non attuale)")}\n${tr("Latitudine")}: ${fix.lat.toFixed(6)}\n${tr("Longitudine")}: ${fix.lng.toFixed(6)}\n${tr("Precisione")}: ±${formatDistance(fix.accuracy, preferences)}\n${tr("Quota GPS")}: ${fix.altitude === null ? tr("Non disponibile").toLocaleLowerCase(preferences.language) : formatAltitude(fix.altitude, preferences)}\n${tr("Rilevata")}: ${formatDateTime(fix.timestamp, preferences)}\nhttps://www.openstreetmap.org/?mlat=${fix.lat.toFixed(6)}&mlon=${fix.lng.toFixed(6)}#map=16/${fix.lat.toFixed(6)}/${fix.lng.toFixed(6)}`;
 }

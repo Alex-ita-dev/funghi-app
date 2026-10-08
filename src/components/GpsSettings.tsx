@@ -1,3 +1,4 @@
+import { usePreferences } from "../hooks/usePreferences";
 import { Crosshair } from "lucide-react";
 import { type LocationPermission } from "../lib/location";
 export function GpsSettings({
@@ -11,21 +12,23 @@ export function GpsSettings({
   error: string;
   onLocate: () => void;
 }) {
+  const { tr } = usePreferences();
   const labels: Record<LocationPermission, string> = {
-    granted: "Concesso",
-    denied: "Negato",
-    prompt: "Da chiedere",
-    unknown: "Da verificare",
-    unsupported: "Non disponibile",
+    granted: tr("Concesso"),
+    denied: tr("Negato"),
+    prompt: tr("Da chiedere"),
+    unknown: tr("Da verificare"),
+    unsupported: tr("Non disponibile"),
   };
   return (
     <article className="settings-card">
       <span className="action-icon orange">
         <Crosshair size={23} />
       </span>
-      <h2>Posizione e permessi</h2>
+      <h2>{tr("Posizione e permessi")}</h2>
       <p>
-        Permesso GPS:{" "}
+        {" "}
+        {tr("Permesso GPS:")}{" "}
         <strong data-testid="gps-permission">{labels[permission]}</strong>
       </p>
       <button
@@ -33,45 +36,55 @@ export function GpsSettings({
         disabled={pending || permission === "unsupported"}
         onClick={onLocate}
       >
-        {pending ? "Ricerca GPS…" : "Attiva posizione"}
+        {pending ? tr("Ricerca GPS…") : tr("Attiva posizione")}
       </button>
       {error && (
         <p className="inline-error" role="alert">
-          {error}
+          {tr(error)}
         </p>
       )}
       <ol>
         <li>
-          Tocca <strong>Attiva posizione</strong>.
+          {" "}
+          {tr("Tocca")} <strong>{tr("Attiva posizione")}</strong>.
         </li>
         <li>
-          Quando il telefono lo chiede, scegli <strong>Consenti</strong> e, se
-          presente, <strong>Posizione precisa</strong>.
+          {" "}
+          {tr("Quando il telefono lo chiede, scegli")}{" "}
+          <strong>{tr("Consenti")}</strong> {tr("e, se presente,")}{" "}
+          <strong>{tr("Posizione precisa")}</strong>.
         </li>
         <li>
-          Se il permesso è negato, apri i permessi del sito nel tuo browser e
-          consenti la posizione. Controlla anche che la localizzazione del
-          telefono sia accesa.
+          {" "}
+          {tr(
+            "Se il permesso è negato, apri i permessi del sito nel tuo browser e consenti la posizione. Controlla anche che la localizzazione del telefono sia accesa.",
+          )}{" "}
         </li>
         <li>
-          Torna qui e premi di nuovo <strong>Attiva posizione</strong>.
+          {" "}
+          {tr("Torna qui e premi di nuovo")}{" "}
+          <strong>{tr("Attiva posizione")}</strong>.
         </li>
       </ol>
       <details>
-        <summary>Aiuto per iPhone e Android</summary>
+        <summary>{tr("Aiuto per iPhone e Android")}</summary>
         <p>
-          <strong>iPhone:</strong> controlla Impostazioni → Privacy e sicurezza
-          → Localizzazione e il permesso del browser usato. Nel browser
-          controlla anche le impostazioni del sito.
+          <strong>iPhone:</strong>{" "}
+          {tr(
+            "controlla Impostazioni → Privacy e sicurezza → Localizzazione e il permesso del browser usato. Nel browser controlla anche le impostazioni del sito.",
+          )}{" "}
         </p>
         <p>
-          <strong>Android:</strong> attiva Posizione nelle impostazioni del
-          telefono. Nei permessi dell’app browser e nelle impostazioni del sito
-          consenti la posizione.
+          <strong>Android:</strong>{" "}
+          {tr(
+            "attiva Posizione nelle impostazioni del telefono. Nei permessi dell’app browser e nelle impostazioni del sito consenti la posizione.",
+          )}{" "}
         </p>
         <p>
-          I nomi dei menu possono cambiare. Questa versione web non può aprire
-          direttamente tutte le impostazioni del telefono.
+          {" "}
+          {tr(
+            "I nomi dei menu possono cambiare. Questa versione web non può aprire direttamente tutte le impostazioni del telefono.",
+          )}{" "}
         </p>
       </details>
     </article>

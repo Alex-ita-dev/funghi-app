@@ -1,0 +1,473 @@
+import type it from "./it";
+export default {
+  Esplora: "Entdecken",
+  "I miei punti": "Meine Orte",
+  "Le mie uscite": "Meine Touren",
+  Impostazioni: "Einstellungen",
+  "Uscita messa in pausa: MycoTrail era in background. Tocca Riprendi per continuare.":
+    "Tour pausiert: MycoTrail war im Hintergrund. Tippe zum Fortfahren auf Fortsetzen.",
+  "Limite di 500 uscite raggiunto. Esporta un backup e rimuovi alcune uscite.":
+    "Limit von 500 Touren erreicht. Exportiere eine Sicherung und lösche einige Touren.",
+  "Registrazione avviata. Tieni MycoTrail visibile durante l’uscita.":
+    "Aufzeichnung gestartet. Lass MycoTrail während der Tour im Vordergrund.",
+  "Registrazione ripresa in un nuovo tratto.":
+    "Aufzeichnung in einem neuen Abschnitt fortgesetzt.",
+  "Concludi questa uscita?": "Diese Tour beenden?",
+  "Il percorso rimarrà nelle tue uscite. Potrai rivederlo ed esportarlo quando vuoi.":
+    "Die Route bleibt in deinen Touren. Du kannst sie jederzeit ansehen oder exportieren.",
+  "Concludi e salva": "Beenden und speichern",
+  "Uscita conclusa. Trovi il percorso in Le mie uscite.":
+    "Tour beendet. Die Route findest du unter Meine Touren.",
+  "Posizione auto salvata.": "Autostandort gespeichert.",
+  "Il file supera 25 MB.": "Die Datei ist größer als 25 MB.",
+  "Ripristina il backup?": "Sicherung wiederherstellen?",
+  "Ripristina dati": "Daten wiederherstellen",
+  "Backup ripristinato. Le uscite aperte sono in pausa.":
+    "Sicherung wiederhergestellt. Offene Touren sind pausiert.",
+  "Backup non valido o troppo grande. Scegli un file JSON esportato da MycoTrail (massimo 25 MB).":
+    "Sicherung ungültig oder zu groß. Wähle einen MycoTrail-JSON-Export (max. 25 MB).",
+  "MycoTrail è già aperta": "MycoTrail ist bereits geöffnet",
+  "Non riusciamo ad aprire il taccuino":
+    "Dein Notizbuch konnte nicht geöffnet werden",
+  "Apriamo il tuo taccuino…": "Dein Notizbuch wird geöffnet…",
+  "Chiudi l’altra scheda di MycoTrail, poi ricarica questa pagina.":
+    "Schließe den anderen MycoTrail-Tab und lade diese Seite neu.",
+  "Un momento, prepariamo la mappa.":
+    "Einen Moment, die Karte wird vorbereitet.",
+  Riprova: "Erneut versuchen",
+  "IL TUO TACCUINO": "DEIN NOTIZBUCH",
+  "Navigazione principale": "Hauptnavigation",
+  "Ogni uscita, una scoperta.": "Jede Tour eine Entdeckung.",
+  "Custodisci i tuoi luoghi.": "Bewahre deine Orte.",
+  "Lascia al bosco la sua bellezza.": "Bewahre die Schönheit des Waldes.",
+  "Il mio taccuino": "Mein Notizbuch",
+  "Salvato su questo dispositivo": "Auf diesem Gerät gespeichert",
+  "Il tuo spazio": "Dein Bereich",
+  "Come funziona MycoTrail": "So funktioniert MycoTrail",
+  "IL PROSSIMO SENTIERO TI ASPETTA": "DEIN NÄCHSTER WEG WARTET",
+  "I LUOGHI CHE VALE LA PENA RICORDARE": "ORTE, DIE IN ERINNERUNG BLEIBEN",
+  "UN PASSO DOPO L’ALTRO": "SCHRITT FÜR SCHRITT",
+  "IL TUO SPAZIO, LE TUE SCELTE": "DEIN BEREICH, DEINE WAHL",
+  "Ci vediamo nel bosco.": "Wir sehen uns im Wald.",
+  "Il tuo piccolo tesoro.": "Dein kleiner Schatz.",
+  "Storie di sentieri.": "Geschichten vom Weg.",
+  "Pronti a partire.": "Bereit zum Aufbruch.",
+  "Segui il tuo percorso. Ritrova i tuoi posti.":
+    "Folge deiner Route. Finde deine Orte wieder.",
+  "Ritrovamenti e fungaie, custoditi nel tuo taccuino.":
+    "Funde und Pilzstellen, sicher in deinem Notizbuch.",
+  "Ogni percorso rimane qui, pronto da ripercorrere.":
+    "Jede Route bleibt hier, bereit für die nächste Tour.",
+  "Gestisci i dati e porta MycoTrail sempre con te.":
+    "Verwalte deine Daten und nimm MycoTrail mit.",
+  "Ricerca GPS…": "GPS wird gesucht…",
+  "In attesa del GPS": "Warten auf GPS",
+  "GPS da attivare": "GPS nicht aktiviert",
+  "Nuovo punto": "Neuer Ort",
+  esplorati: "erkundet",
+  "Esporta backup": "Sicherung exportieren",
+  "Sei offline. I dati restano sul dispositivo; nuove aree della mappa richiedono internet.":
+    "Du bist offline. Deine Daten bleiben auf dem Gerät; neue Kartenbereiche benötigen Internet.",
+  "Esplora la mappa": "Karte erkunden",
+  "Mappa a schermo intero": "Vollbildkarte",
+  "Vista iniziale · Valdarno": "Startansicht · Valdarno",
+  "Riduci mappa": "Vollbild beenden",
+  "Espandi mappa": "Karte vergrößern",
+  "Centra sulla mia posizione": "Auf meinen Standort zentrieren",
+  "Tocca la mappa per": "Tippe auf die Karte, um",
+  "Annulla selezione": "Auswahl abbrechen",
+  "Il bosco comincia da qui.": "Hier beginnt der Wald.",
+  "Attiva la posizione per orientarti sulla mappa.":
+    "Aktiviere den Standort, um dich auf der Karte zu orientieren.",
+  "Ricerca…": "Suche…",
+  "Attiva GPS": "GPS aktivieren",
+  "GPS assente o da aggiornare": "GPS fehlt oder muss aktualisiert werden",
+  "Registrazione in corso · schermo acceso":
+    "Aufzeichnung läuft · Bildschirm anlassen",
+  "Uscita in pausa": "Tour pausiert",
+  "Nessuna registrazione": "Keine Aufzeichnung",
+  "Auto e traccia inquadrate. La traccia può avere interruzioni; non è un itinerario calcolato.":
+    "Auto und Track im Blick. Der Track kann Lücken haben; es ist keine berechnete Route.",
+  "Salva punto": "Ort speichern",
+  "Aggiorna la posizione auto?": "Autostandort aktualisieren?",
+  "Sostituirai il punto auto corrente. Le uscite concluse lo conserveranno.":
+    "Der aktuelle Autopunkt wird ersetzt. Abgeschlossene Touren behalten ihren.",
+  "Scegli nuova posizione": "Neuen Standort wählen",
+  "Salva auto": "Auto speichern",
+  "Torna auto": "Zurück zum Auto",
+  Pausa: "Pause",
+  Riprendi: "Fortsetzen",
+  "Avvia uscita": "Tour starten",
+  Tu: "Du",
+  Auto: "Auto",
+  Ritrovamento: "Fund",
+  Fungaia: "Pilzstelle",
+  "Salvataggio…": "Speichern…",
+  "Dati non salvati": "Daten nicht gespeichert",
+  "Dati sul dispositivo": "Daten auf dem Gerät",
+  "VERSO L’AUTO": "ZURÜCK ZUM AUTO",
+  "Ripercorri i tuoi passi.": "Gehe deinen Weg zurück.",
+  "Segui sulla mappa i tratti arancioni che hai registrato.":
+    "Folge den aufgezeichneten orangefarbenen Abschnitten auf der Karte.",
+  "in linea d’aria dall’ultima posizione": "Luftlinie vom letzten Standort",
+  "La traccia può avere interruzioni. Non viene calcolato un percorso pedonale.":
+    "Der Track kann Lücken haben. Es wird keine Wanderroute berechnet.",
+  "Non c’è una traccia registrata per questa auto. Il segnaposto indica solo la sua posizione.":
+    "Für diesen Autopunkt gibt es keinen Track. Die Markierung zeigt nur den Standort.",
+  "Inquadra auto e traccia": "Auto und Track anzeigen",
+  "Torna all’esplorazione": "Zurück zum Entdecken",
+  "USCITA IN CORSO": "TOUR LÄUFT",
+  "USCITA IN PAUSA": "TOUR PAUSIERT",
+  "LA TUA PROSSIMA USCITA": "DEINE NÄCHSTE TOUR",
+  "Un passo alla volta.": "Ein Schritt nach dem anderen.",
+  "Prenditi un po’ di bosco.": "Gönn dir Zeit im Wald.",
+  "Stiamo custodendo il tuo percorso.": "Deine Route wird aufgezeichnet.",
+  "La traccia è salvata. Riparti quando vuoi.":
+    "Track gespeichert. Setze die Tour fort, wenn du bereit bist.",
+  "Avvia il percorso e lascia spazio alla scoperta.":
+    "Starte deine Tour und entdecke Neues.",
+  Percorso: "Strecke",
+  "Tempo attivo": "Aktive Zeit",
+  Concludi: "Beenden",
+  "Cerchiamo il GPS…": "GPS wird gesucht…",
+  "Segnale GPS assente o impreciso: in attesa di una posizione valida.":
+    "GPS fehlt oder ist ungenau: Warten auf einen gültigen Standort.",
+  "Limite traccia raggiunto. Concludi l’uscita e avviane una nuova.":
+    "Tracklimit erreicht. Beende diese Tour und starte eine neue.",
+  "Tieni l’app visibile. In background l’uscita va in pausa.":
+    "Lass die App sichtbar. Im Hintergrund wird die Tour pausiert.",
+  "Segna un punto": "Ort markieren",
+  "Un ritrovamento, un posto speciale": "Ein Fund, ein besonderer Ort",
+  "Il punto auto attuale sarà sostituito. Le uscite concluse conserveranno il loro punto originale.":
+    "Der aktuelle Autopunkt wird ersetzt. Abgeschlossene Touren behalten ihren ursprünglichen Punkt.",
+  "Auto salvata": "Auto gespeichert",
+  "Salva l’auto": "Auto merken",
+  "Il tuo punto di partenza": "Dein Startpunkt",
+  "Torna all’auto": "Zum Auto zurückkehren",
+  "Ritrova il percorso registrato": "Deinen Track wiederfinden",
+  "Stai vedendo:": "Angezeigt:",
+  "Nascondi percorso": "Route ausblenden",
+  "I posti migliori sono quelli": "Die besten Orte sind die,",
+  "che impari a riconoscere.": "die du wiedererkennst.",
+  "I tuoi ultimi punti": "Deine neuesten Orte",
+  "Il taccuino": "Das Notizbuch",
+  "Il tuo primo punto ti aspetta.": "Dein erster Ort wartet.",
+  "Salva un ritrovamento o una fungaia: li ritroverai qui.":
+    "Speichere einen Fund oder eine Pilzstelle: Du findest sie hier wieder.",
+  "Aggiungi un punto": "Ort hinzufügen",
+  "Filtra punti": "Orte filtern",
+  Tutti: "Alle",
+  Ritrovamenti: "Funde",
+  Fungaie: "Pilzstellen",
+  "Cerca nei punti": "Orte suchen",
+  "Cerca nel taccuino…": "Notizbuch durchsuchen…",
+  "Un luogo da ricordare.": "Ein Ort zum Merken.",
+  "Apri sulla mappa": "Auf Karte öffnen",
+  "Nessun punto trovato.": "Keine Orte gefunden.",
+  "Il taccuino è tutto da scrivere.": "Dein Notizbuch wartet auf dich.",
+  "Prova un altro nome o cambia filtro.":
+    "Versuche einen anderen Namen oder Filter.",
+  "Aggiungi un punto usando il GPS o scegliendolo sulla mappa.":
+    "Füge einen Ort per GPS hinzu oder wähle ihn auf der Karte.",
+  CONCLUSA: "ABGESCHLOSSEN",
+  "IN CORSO": "LÄUFT",
+  "IN PAUSA": "PAUSIERT",
+  "posizioni ·": "Positionen ·",
+  tratti: "Abschnitte",
+  ore: "Stunden",
+  Vedi: "Ansehen",
+  "Elimina questa uscita?": "Diese Tour löschen?",
+  "Il percorso sarà rimosso da questo dispositivo. I ritrovamenti rimarranno nel taccuino.":
+    "Die Route wird vom Gerät entfernt. Funde bleiben im Notizbuch.",
+  "Elimina uscita": "Tour löschen",
+  "Il primo sentiero è ancora da percorrere.":
+    "Dein erster Weg liegt noch vor dir.",
+  "Tocca Avvia uscita nella mappa per registrare il tuo percorso.":
+    "Tippe auf der Karte auf Tour starten, um deinen Weg aufzuzeichnen.",
+  "I tuoi posti restano tuoi.": "Deine Orte bleiben deine.",
+  "Punti e percorsi sono salvati solo in questo browser, su questo dispositivo. Non hai ancora un account e non vengono sincronizzati.":
+    "Orte und Routen werden nur in diesem Browser auf diesem Gerät gespeichert. Es gibt noch kein Konto und keine Synchronisierung.",
+  "Se cancelli i dati del sito o cambi dispositivo, puoi perderli. Esporta periodicamente un backup.":
+    "Beim Löschen der Websitedaten oder Gerätewechsel können Daten verloren gehen. Exportiere regelmäßig Sicherungen.",
+  "Importa backup": "Sicherung importieren",
+  "Concludi l’uscita prima di importare un backup.":
+    "Beende die Tour, bevor du eine Sicherung importierst.",
+  "MycoTrail sul tuo telefono.": "MycoTrail auf deinem Handy.",
+  "Apri MycoTrail nel tuo browser su iPhone o Android.":
+    "Öffne MycoTrail im Browser auf iPhone oder Android.",
+  "Su iPhone cerca": "Auf dem iPhone suche nach",
+  "Condividi → Aggiungi alla schermata Home": "Teilen → Zum Home-Bildschirm",
+  "Su Android apri il menu del browser e cerca":
+    "Öffne unter Android das Browsermenü und suche nach",
+  "Installa app": "App installieren",
+  o: "oder",
+  "Aggiungi a schermata Home": "Zum Startbildschirm hinzufügen",
+  "Apri MycoTrail e consenti la posizione.":
+    "Öffne MycoTrail und erlaube den Standortzugriff.",
+  "Durante la registrazione tieni l’app in primo piano. Proviamo a mantenere lo schermo acceso quando il browser lo consente. Il tracking affidabile a schermo spento richiederà la futura versione nativa, anche se installi questa web app sulla Home.":
+    "Lass die App beim Aufzeichnen im Vordergrund. Wenn möglich, halten wir den Bildschirm an. Zuverlässiges Tracking bei gesperrtem Bildschirm erfordert die zukünftige native App, auch bei Installation dieser Web-App auf dem Startbildschirm.",
+  "Leggi la guida": "Anleitung lesen",
+  "Pronta per orientarti.": "Bereit zur Orientierung.",
+  "Mappe selezionabili, bussola, schermo intero e SOS affiancano il taccuino e le uscite. Mappe scaricabili, pendenze numeriche e filtro versanti non sono ancora disponibili.":
+    "Kartenwahl, Kompass, Vollbild und SOS ergänzen Notizbuch und Touren. Karten-Downloads, numerische Hangneigung und Expositionsfilter sind noch nicht verfügbar.",
+  "La cartografia viene caricata da OpenTopoMap, OpenStreetMap o, se configurato, MapTiler: il fornitore riceve le normali richieste web per l’area visualizzata. L’app non invia a un nostro server le tue fungaie o le tue tracce.":
+    "Karten werden von OpenTopoMap, OpenStreetMap oder, falls eingerichtet, MapTiler geladen. Der Anbieter erhält Webanfragen für den sichtbaren Bereich. Pilzstellen und Tracks werden nicht an unsere Server gesendet.",
+  "Prenditi cura dei tuoi luoghi.": "Achte auf deine Orte.",
+  "MycoTrail · Fatto per esplorare": "MycoTrail · Zum Entdecken gemacht",
+  "Navigazione mobile": "Mobile Navigation",
+  "Chiudi avviso": "Hinweis schließen",
+  "Dov’è la tua auto?": "Wo ist dein Auto?",
+  "Un nuovo punto nel bosco": "Ein neuer Ort im Wald",
+  "Usa la posizione attuale oppure scegli un punto preciso sulla mappa.":
+    "Nutze deinen aktuellen Standort oder wähle einen genauen Punkt auf der Karte.",
+  "La mia posizione": "Mein Standort",
+  "Con il GPS del dispositivo": "Mit dem GPS deines Geräts",
+  "Scegli sulla mappa": "Auf Karte wählen",
+  "Per segnare anche un posto lontano": "Auch entfernte Orte markieren",
+  "Limite di 10.000 punti raggiunto. Esporta un backup e libera il taccuino.":
+    "Limit von 10.000 Orten erreicht. Exportiere eine Sicherung und räume dein Notizbuch auf.",
+  "Punto salvato nel tuo taccuino.": "Ort im Notizbuch gespeichert.",
+  "Nessuna nota aggiunta.": "Keine Notizen hinzugefügt.",
+  "Scelto sulla mappa": "Auf Karte gewählt",
+  "Modifica punto": "Ort bearbeiten",
+  "Elimina questo punto?": "Diesen Ort löschen?",
+  "Il ritrovamento sarà rimosso dal taccuino su questo dispositivo.":
+    "Dieser Fund wird aus dem Notizbuch auf diesem Gerät entfernt.",
+  "Elimina punto": "Ort löschen",
+  Elimina: "Löschen",
+  Annulla: "Abbrechen",
+  "Prima di entrare nel bosco": "Bevor du in den Wald gehst",
+  "Segna il punto di partenza": "Startpunkt markieren",
+  "Salva l’auto prima di avviare l’uscita. Ogni uscita mantiene il proprio punto auto.":
+    "Speichere das Auto vor dem Tourstart. Jede Tour behält ihren eigenen Autopunkt.",
+  "Tieni MycoTrail aperta": "MycoTrail geöffnet lassen",
+  "Se cambi app o blocchi lo schermo, la registrazione viene messa in pausa. Al ritorno tocca Riprendi. Le interruzioni non vengono collegate con linee inventate.":
+    "Appwechsel oder Bildschirmsperre pausieren die Aufzeichnung. Tippe danach auf Fortsetzen. Lücken werden nicht durch erfundene Linien verbunden.",
+  "La mappa richiede connessione": "Die Karte braucht Internet",
+  "Dopo il primo caricamento completo, l’interfaccia può riaprirsi offline. Punti e tracce sono locali, ma la cartografia non viene scaricata per l’uso offline.":
+    "Nach dem ersten vollständigen Laden kann die Oberfläche offline geöffnet werden. Orte und Tracks sind lokal, Karten werden aber nicht für die Offline-Nutzung heruntergeladen.",
+  "Ritorna lungo i tuoi passi": "Deinen Weg zurückgehen",
+  "Il ritorno mostra la traccia registrata e il punto auto. La distanza è in linea d’aria, non un itinerario da seguire. Questa prima versione va provata su percorsi conosciuti.":
+    "Die Rückkehransicht zeigt Track und Autopunkt. Die Entfernung ist Luftlinie, keine Route zum Folgen. Teste diese Version auf bekannten Wegen.",
+  "Ho capito, esploriamo": "Verstanden, los geht’s",
+  "Modifica il tuo punto": "Deinen Ort bearbeiten",
+  "Un posto da ricordare": "Ein Ort zum Merken",
+  "Nome del punto": "Name des Ortes",
+  "Es. Porcini sotto il castagno": "z. B. Steinpilze unter der Kastanie",
+  "Es. La fungaia del sentiero alto": "z. B. Pilzstelle am oberen Weg",
+  "Le tue note": "Deine Notizen",
+  "(facoltative)": "(optional)",
+  "Alberi vicini, terreno, dettagli da ricordare…":
+    "Bäume, Boden, wichtige Details…",
+  Mappa: "Karte",
+  "IL BOSCO, A MODO TUO.": "DER WALD, AUF DEINE ART.",
+  "Attiva bussola del dispositivo": "Gerätekompass aktivieren",
+  "Nord in alto": "Norden ist oben",
+  "Attiva bussola": "Kompass aktivieren",
+  Concesso: "Erlaubt",
+  Negato: "Verweigert",
+  "Da chiedere": "Noch nicht angefragt",
+  "Da verificare": "Noch zu prüfen",
+  "Non disponibile": "Nicht verfügbar",
+  "Posizione e permessi": "Standort und Berechtigungen",
+  "Permesso GPS:": "GPS-Berechtigung:",
+  "Attiva posizione": "Standort aktivieren",
+  Tocca: "Tippe auf",
+  "Quando il telefono lo chiede, scegli": "Wenn dein Handy fragt, wähle",
+  Consenti: "Erlauben",
+  "e, se presente,": "und, falls verfügbar,",
+  "Posizione precisa": "Genauer Standort",
+  "Se il permesso è negato, apri i permessi del sito nel tuo browser e consenti la posizione. Controlla anche che la localizzazione del telefono sia accesa.":
+    "Bei verweigerter Berechtigung öffne die Websiteberechtigungen im Browser und erlaube den Standort. Prüfe auch, ob die Ortungsdienste des Handys aktiviert sind.",
+  "Torna qui e premi di nuovo": "Kehre hierher zurück und tippe erneut auf",
+  "Aiuto per iPhone e Android": "Hilfe für iPhone und Android",
+  "controlla Impostazioni → Privacy e sicurezza → Localizzazione e il permesso del browser usato. Nel browser controlla anche le impostazioni del sito.":
+    "Prüfe Einstellungen → Datenschutz & Sicherheit → Ortungsdienste und die Berechtigung deines Browsers. Prüfe auch die Websiteeinstellungen im Browser.",
+  "attiva Posizione nelle impostazioni del telefono. Nei permessi dell’app browser e nelle impostazioni del sito consenti la posizione.":
+    "Aktiviere Standort in den Handyeinstellungen. Erlaube den Standort in den App-Berechtigungen des Browsers und in den Websiteeinstellungen.",
+  "I nomi dei menu possono cambiare. Questa versione web non può aprire direttamente tutte le impostazioni del telefono.":
+    "Menünamen können abweichen. Diese Webversion kann nicht alle Handyeinstellungen direkt öffnen.",
+  "Scegli la mappa": "Karte wählen",
+  "Tipo di mappa": "Kartentyp",
+  "Da configurare: chiave MapTiler del progetto":
+    "Einrichtung nötig: MapTiler-Projektschlüssel",
+  "La topografica mostra curve di livello e rilievo. Pendenze numeriche e filtro dei versanti non sono ancora disponibili. Le nuove aree della mappa richiedono internet.":
+    "Die topografische Karte zeigt Höhenlinien und Relief. Numerische Hangneigung und Expositionsfilter sind noch nicht verfügbar. Neue Kartenbereiche benötigen Internet.",
+  "Posizione auto": "Autostandort",
+  "La tua auto": "Dein Auto",
+  "Ultima posizione rilevata": "Zuletzt erfasster Standort",
+  "Mappa interattiva": "Interaktive Karte",
+  "Cartografia incompleta o non disponibile. Punti e tracce restano visibili; per nuove aree serve internet.":
+    "Karte unvollständig oder nicht verfügbar. Orte und Tracks bleiben sichtbar; neue Bereiche benötigen Internet.",
+  "Usa stradale": "Straßenkarte nutzen",
+  "Riprova mappa": "Karte erneut laden",
+  Chiudi: "Schließen",
+  "Coordinate copiate.": "Koordinaten kopiert.",
+  "Copia automatica non disponibile. Tieni premuto il testo delle coordinate per copiarlo.":
+    "Automatisches Kopieren nicht verfügbar. Halte den Koordinatentext gedrückt, um ihn zu kopieren.",
+  "Posizione MycoTrail": "MycoTrail-Standort",
+  "Posizione consegnata al sistema di condivisione; verifica l’invio nell’app scelta.":
+    "Standort an das Teilen-Menü übergeben; prüfe den Versand in der gewählten App.",
+  "Condivisione non riuscita. Puoi copiare le coordinate.":
+    "Teilen fehlgeschlagen. Du kannst die Koordinaten kopieren.",
+  "SOS · La tua posizione": "SOS · Dein Standort",
+  "Chiama 112": "112 anrufen",
+  "Apre il telefono: MycoTrail non invia automaticamente richieste di soccorso. Comunica le coordinate all’operatore. La chiamata dipende dalla copertura telefonica.":
+    "Öffnet das Telefon: MycoTrail sendet nicht automatisch einen Notruf. Nenne dem Operator deine Koordinaten. Ein Anruf hängt vom Mobilfunkempfang ab.",
+  "Posizione precedente: potrebbe non essere dove sei ora.":
+    "Früherer Standort: Du bist möglicherweise nicht mehr dort.",
+  "Posizione recente ma imprecisa.": "Aktueller, aber ungenauer Standort.",
+  "Posizione GPS recente": "Aktueller GPS-Standort",
+  Latitudine: "Breitengrad",
+  Longitudine: "Längengrad",
+  Precisione: "Genauigkeit",
+  "Quota GPS": "GPS-Höhe",
+  "Rilevata alle": "Erfasst am",
+  "Copia coordinate": "Koordinaten kopieren",
+  "Condividi coordinate": "Koordinaten teilen",
+  "Nessuna posizione rilevata. Puoi chiamare il 112 anche senza attendere il GPS.":
+    "Noch kein Standort. Du kannst 112 anrufen, ohne auf GPS zu warten.",
+  "Ricerca posizione…": "Standort wird gesucht…",
+  "Aggiorna posizione GPS": "GPS-Standort aktualisieren",
+  "Coordinate disponibili anche senza internet se il GPS riesce a rilevarle. Condivisione e consegna del messaggio dipendono dall’app scelta e dalla rete.":
+    "Koordinaten sind ohne Internet verfügbar, wenn GPS einen Standort ermitteln kann. Teilen und Zustellung hängen von der gewählten App und dem Netz ab.",
+  "Impossibile leggere i dati salvati. Non verranno sovrascritti. Prova a riaprire MycoTrail in una finestra non privata del tuo browser.":
+    "Gespeicherte Daten können nicht gelesen werden und werden nicht überschrieben. Öffne MycoTrail in einem normalen Browserfenster erneut.",
+  "Salvataggio non riuscito: i nuovi dati sono solo in memoria. Esporta un backup prima di chiudere e libera spazio sul dispositivo.":
+    "Speichern fehlgeschlagen: Neue Daten sind nur im Arbeitsspeicher. Exportiere vor dem Schließen eine Sicherung und schaffe Speicherplatz.",
+  "GPS non autorizzato. Consenti la posizione nei permessi del sito e del browser, poi riprova. Trovi aiuto in Impostazioni.":
+    "GPS nicht erlaubt. Erlaube den Standort in Website- und Browserberechtigungen und versuche es erneut. Hilfe findest du in den Einstellungen.",
+  "Posizione non disponibile. Prova in un punto più aperto.":
+    "Standort nicht verfügbar. Versuche es an einem offeneren Ort.",
+  "Il GPS non risponde. Spostati all’aperto e riprova.":
+    "GPS antwortet nicht. Gehe ins Freie und versuche es erneut.",
+  "Il GPS richiede HTTPS e un browser con geolocalizzazione.":
+    "GPS erfordert HTTPS und einen Browser mit Standortfunktion.",
+  "Bussola non disponibile. Uso la direzione GPS quando cammini.":
+    "Kompass nicht verfügbar. Beim Gehen wird die GPS-Richtung verwendet.",
+  "Bussola non autorizzata. Resta disponibile la direzione GPS.":
+    "Kompass nicht erlaubt. Die GPS-Richtung bleibt verfügbar.",
+  "In attesa della bussola. Tieni il telefono in piano, lontano da metalli.":
+    "Warten auf Kompass. Halte das Handy waagerecht und fern von Metall.",
+  "Sensore non accessibile. Resta disponibile la direzione GPS.":
+    "Sensor nicht zugänglich. Die GPS-Richtung bleibt verfügbar.",
+  Bussola: "Kompass",
+  "Movimento GPS": "GPS-Bewegung",
+  "Direzione non disponibile": "Richtung nicht verfügbar",
+  Topografica: "Topografisch",
+  "Sentieri, curve di livello e rilievo · OpenTopoMap":
+    "Wege, Höhenlinien und Relief · OpenTopoMap",
+  Satellite: "Satellit",
+  "Immagini del territorio · MapTiler": "Satellitenbilder · MapTiler",
+  Outdoor: "Outdoor",
+  "Sentieri e rilievo ombreggiato · MapTiler":
+    "Wege und Schummerung · MapTiler",
+  Stradale: "Straßenkarte",
+  "Strade e punti di riferimento · OpenStreetMap":
+    "Straßen und Orientierungspunkte · OpenStreetMap",
+  Aspetto: "Darstellung",
+  Tema: "Design",
+  "Automatico / sistema": "Automatisch / System",
+  Chiaro: "Hell",
+  Scuro: "Dunkel",
+  "Lingua e regione": "Sprache und Region",
+  Lingua: "Sprache",
+  Paese: "Land",
+  Altro: "Anderes",
+  "Il Paese propone lingua e unità. Puoi modificarle liberamente.":
+    "Das Land schlägt Sprache und Einheiten vor. Du kannst sie frei ändern.",
+  "Formato data": "Datumsformat",
+  "Formato ora": "Zeitformat",
+  "24 ore": "24 Stunden",
+  "12 ore AM/PM": "12 Stunden AM/PM",
+  "Unità di misura": "Maßeinheiten",
+  "Sistema di misura": "Maßsystem",
+  Metrico: "Metrisch",
+  Imperiale: "Imperial",
+  Personalizzato: "Benutzerdefiniert",
+  Temperatura: "Temperatur",
+  Distanza: "Entfernung",
+  Quota: "Höhe",
+  Peso: "Gewicht",
+  Precipitazioni: "Niederschlag",
+  "Temperatura, peso e pioggia: preferenze pronte per le funzioni future.":
+    "Temperatur, Gewicht und Regen: Einstellungen für künftige Funktionen.",
+  "Profilo di ricerca": "Suchprofil",
+  Funghi: "Pilze",
+  Tartufi: "Trüffel",
+  Entrambi: "Beides",
+  Principiante: "Anfänger",
+  Intermedio: "Fortgeschritten",
+  Esperto: "Experte",
+  "Riconfigura profilo": "Profil neu einrichten",
+  "La configurazione modifica solo preferenze e profilo. Punti e percorsi restano intatti.":
+    "Die Einrichtung ändert nur Einstellungen und Profil. Orte und Routen bleiben erhalten.",
+  "Preferenze non salvate. Riprova prima di chiudere.":
+    "Einstellungen nicht gespeichert. Versuche es vor dem Schließen erneut.",
+  "Preferenze salvate sul dispositivo.":
+    "Einstellungen auf dem Gerät gespeichert.",
+  "Benvenuto in MycoTrail": "Willkommen bei MycoTrail",
+  "Come ti chiami?": "Wie heißt du?",
+  "Da dove vieni?": "Woher kommst du?",
+  "Cosa cerchi nel bosco?": "Was suchst du im Wald?",
+  "Cosa cerchi più spesso?": "Was suchst du am häufigsten?",
+  "Livello esperienza": "Erfahrung",
+  "MycoTrail è pronto.": "MycoTrail ist bereit.",
+  "Passaggio {{step}} di {{total}}": "Schritt {{step}} von {{total}}",
+  "Il bosco, a modo tuo.": "Der Wald, auf deine Art.",
+  "Tracce, ritrovamenti e strumenti outdoor, sempre nel tuo taccuino.":
+    "Tracks, Funde und Outdoor-Werkzeuge, immer in deinem Notizbuch.",
+  "Nome o nickname": "Name oder Spitzname",
+  "Puoi usare un nickname o lasciare il campo vuoto.":
+    "Nutze einen Spitznamen oder lass das Feld leer.",
+  "Potrai modificare tutto in seguito dalle Impostazioni.":
+    "Du kannst später alles in den Einstellungen ändern.",
+  Salta: "Überspringen",
+  Indietro: "Zurück",
+  Inizia: "Los geht’s",
+  Continua: "Weiter",
+  "Entra nel bosco": "Ab in den Wald",
+  "Completa il tuo profilo MycoTrail": "Vervollständige dein MycoTrail-Profil",
+  "Configura profilo": "Profil einrichten",
+  "Non riusciamo a leggere le preferenze.":
+    "Einstellungen konnten nicht gelesen werden.",
+  "I dati sono al sicuro: riprova senza cancellare i dati del sito.":
+    "Deine Daten wurden nicht verändert: Versuche es erneut, ohne Websitedaten zu löschen.",
+  Porcini: "Steinpilze",
+  "Galletti / Finferli": "Pfifferlinge",
+  Ovuli: "Kaiserlinge",
+  "Mazze di tamburo": "Parasole",
+  Morette: "Erdritterlinge",
+  Prugnoli: "Maipilze",
+  Spugnole: "Morcheln",
+  "Altri funghi": "Andere Pilze",
+  "Tartufo bianco": "Weiße Trüffel",
+  "Tartufo nero pregiato": "Périgord-Trüffel",
+  Scorzone: "Sommertrüffel",
+  Uncinato: "Burgundertrüffel",
+  Bianchetto: "Bianchetto-Trüffel",
+  "Altri tartufi": "Andere Trüffel",
+  "segnare l’auto": "das Auto zu markieren",
+  "aggiungere un punto": "einen Ort hinzuzufügen",
+  "Uscita del {{date}}": "Tour vom {{date}}",
+  "Posizione del {{date}}": "Standort vom {{date}}",
+  "Scegli mappa: {{name}}": "Karte wählen: {{name}}",
+  "GPS ancora impreciso (±{{accuracy}}). Attendi un segnale entro {{limit}} oppure scegli il punto sulla mappa.":
+    "GPS noch ungenau (±{{accuracy}}). Warte auf eine Genauigkeit innerhalb {{limit}} oder wähle einen Punkt auf der Karte.",
+  "Contiene {{places}} punti e {{outings}} uscite. Sostituirà i dati presenti su questo dispositivo: esporta prima un backup se vuoi conservarli.":
+    "Enthält {{places}} Orte und {{outings}} Touren. Die Daten auf diesem Gerät werden ersetzt: Exportiere vorher eine Sicherung, wenn du sie behalten möchtest.",
+  "Esporta GPX {{name}}": "GPX exportieren {{name}}",
+  "Elimina {{name}}": "Löschen {{name}}",
+  "Salvato con GPS · ±{{accuracy}}": "Mit GPS gespeichert · ±{{accuracy}}",
+  "Attiva bussola. {{source}}": "Kompass aktivieren. {{source}}",
+  "{{degrees}} gradi {{direction}}": "{{degrees}} Grad {{direction}}",
+  "Posizione GPS": "GPS-Standort",
+  "Ultima posizione nota (non attuale)":
+    "Letzter bekannter Standort (nicht aktuell)",
+  Rilevata: "Erfasst",
+  Ingrandisci: "Vergrößern",
+  Riduci: "Verkleinern",
+  "Info e privacy": "Info und Datenschutz",
+  "Dati e backup": "Daten und Sicherungen",
+  "Specie preferite": "Bevorzugte Arten",
+} satisfies Record<keyof typeof it, string>;

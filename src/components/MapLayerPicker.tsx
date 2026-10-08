@@ -1,3 +1,4 @@
+import { usePreferences } from "../hooks/usePreferences";
 import { Check, Layers } from "lucide-react";
 import { Modal } from "./Modal";
 import { mapLayers, type MapLayerId } from "../lib/maps";
@@ -10,9 +11,14 @@ export function MapLayerPicker({
   onSelect: (id: MapLayerId) => void;
   onClose: () => void;
 }) {
+  const { tr } = usePreferences();
   return (
-    <Modal title="Scegli la mappa" onClose={onClose}>
-      <div className="layer-choices" role="group" aria-label="Tipo di mappa">
+    <Modal title={tr("Scegli la mappa")} onClose={onClose}>
+      <div
+        className="layer-choices"
+        role="group"
+        aria-label={tr("Tipo di mappa")}
+      >
         {mapLayers.map((layer) => (
           <button
             key={layer.id}
@@ -26,10 +32,12 @@ export function MapLayerPicker({
           >
             <Layers size={22} />
             <span>
-              <strong>{layer.name}</strong>
-              <small>{layer.description}</small>
+              <strong>{tr(layer.name)}</strong>
+              <small>{tr(layer.description)}</small>
               {!layer.url && (
-                <small>Da configurare: chiave MapTiler del progetto</small>
+                <small>
+                  {tr("Da configurare: chiave MapTiler del progetto")}
+                </small>
               )}
             </span>
             {selected === layer.id && <Check size={20} />}
@@ -37,9 +45,10 @@ export function MapLayerPicker({
         ))}
       </div>
       <p className="modal-description">
-        La topografica mostra curve di livello e rilievo. Pendenze numeriche e
-        filtro dei versanti non sono ancora disponibili. Le nuove aree della
-        mappa richiedono internet.
+        {" "}
+        {tr(
+          "La topografica mostra curve di livello e rilievo. Pendenze numeriche e filtro dei versanti non sono ancora disponibili. Le nuove aree della mappa richiedono internet.",
+        )}{" "}
       </p>
     </Modal>
   );

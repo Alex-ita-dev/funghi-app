@@ -1,4 +1,5 @@
 import { test, expect, type Page } from "@playwright/test";
+import { seedLegacy } from "./fixtures";
 // Only the OS location source is simulated; UI, IndexedDB, map, and service worker run normally.
 async function fakeGps(page: Page, denied = false) {
   await page.addInitScript(
@@ -83,6 +84,7 @@ async function database(page: Page) {
 }
 
 test.beforeEach(async ({ page }) => {
+  await seedLegacy(page);
   // Avoid depending on public tile service availability in automated tests.
   await page.route(
     /https:\/\/(.*tile\.opentopomap\.org|tile\.openstreetmap\.org|api\.maptiler\.com)\/.*/,
@@ -187,7 +189,7 @@ test("backup import validation and round trip", async ({ page }) => {
     mimeType: "application/json",
     buffer: Buffer.from('{"version":99}'),
   });
-  await expect(page.getByRole("status")).toContainText("Backup non valido");
+  await expect(page.locator(".toast")).toContainText("Backup non valido");
   const saved = {
     version: 1,
     savedAt: Date.now(),

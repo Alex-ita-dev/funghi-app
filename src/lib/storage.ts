@@ -1,4 +1,11 @@
 import { type AppData, emptyData, recoverData } from "./model";
+import {
+  defaultSettings,
+  mergeSettings,
+  settingsSchema,
+  type SettingsPatch,
+  type UserSettings,
+} from "./preferences";
 let connection: Promise<IDBDatabase> | undefined;
 function db(): Promise<IDBDatabase> {
   if (!connection)
@@ -11,6 +18,61 @@ function db(): Promise<IDBDatabase> {
         reject(new Error("Database occupato: chiudi le altre schede."));
     });
   return connection;
+}
+// Same DB/store, separate versioned record. Never replace or migrate `main`.
+// Read both records in one transaction, before creating preferences: even an
+// empty legacy journal counts as an existing installation.
+export async function readSettings(
+  locales: readonly string[],
+): Promise<UserSettings> {
+  const database = await db();
+  return new Promise((resolve, reject) => {
+    const tx = database.transaction("data", "readwrite");
+    const store = tx.objectStore("data");
+    const main = store.get("main");
+    const prefs = store.get("settings");
+    let result: UserSettings;
+    let validationError: unknown;
+    prefs.onsuccess = () => {
+      try {
+        result =
+          prefs.result === undefined
+            ? defaultSettings(locales, main.result !== undefined)
+            : settingsSchema.parse(prefs.result);
+        if (prefs.result === undefined) store.put(result, "settings");
+      } catch (error) {
+        validationError = error;
+        tx.abort();
+      }
+    };
+    tx.oncomplete = () => resolve(result);
+    tx.onerror = () => reject(tx.error);
+    tx.onabort = () => reject(validationError ?? tx.error);
+  });
+}
+export async function writeSettings(
+  patch: SettingsPatch,
+): Promise<UserSettings> {
+  const database = await db();
+  return new Promise((resolve, reject) => {
+    const tx = database.transaction("data", "readwrite");
+    const store = tx.objectStore("data");
+    const request = store.get("settings");
+    let result: UserSettings;
+    let validationError: unknown;
+    request.onsuccess = () => {
+      try {
+        result = mergeSettings(settingsSchema.parse(request.result), patch);
+        store.put(result, "settings");
+      } catch (error) {
+        validationError = error;
+        tx.abort();
+      }
+    };
+    tx.oncomplete = () => resolve(result);
+    tx.onerror = () => reject(tx.error);
+    tx.onabort = () => reject(validationError ?? tx.error);
+  });
 }
 export async function readData(): Promise<AppData> {
   const database = await db();
