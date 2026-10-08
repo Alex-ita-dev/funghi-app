@@ -152,6 +152,9 @@ it("keeps the Leaflet instance and one scale/zoom control when preferences chang
 it("changes tiles, preserves centre/zoom and persists the preferred layer", async () => {
   const mounted = mount();
   await screen.findByText("Street");
+  await waitFor(() =>
+    expect(document.querySelector(".leaflet-control-scale")).not.toBeNull(),
+  );
   act(() => {
     map.setView([44, 12], 9);
   });
@@ -168,6 +171,9 @@ it("changes tiles, preserves centre/zoom and persists the preferred layer", asyn
   mounted.unmount();
   mount();
   await screen.findByText("Street");
+  await waitFor(() =>
+    expect(document.querySelector(".leaflet-control-scale")).not.toBeNull(),
+  );
   expect(map.getZoom()).toBe(9);
   expect(map.getCenter().lat).toBeCloseTo(44);
   expect(map.hasLayer(tile)).toBe(true);
@@ -180,6 +186,9 @@ it("restores viewport but lets explicit centring win and never replays it on tab
   );
   const mounted = mount();
   await screen.findByText("Street");
+  await waitFor(() =>
+    expect(document.querySelector(".leaflet-control-scale")).not.toBeNull(),
+  );
   expect(map.getZoom()).toBe(8);
   mounted.rerender(
     <PreferencesProvider>
@@ -209,6 +218,9 @@ it("restores viewport but lets explicit centring win and never replays it on tab
 it("falls back once after a failed tile batch and detaches tile listeners on unmount", async () => {
   const mounted = mount();
   await screen.findByText("Street");
+  await waitFor(() =>
+    expect(document.querySelector(".leaflet-control-scale")).not.toBeNull(),
+  );
   act(() => {
     tile.fire("tileerror", { tile: document.createElement("img") });
     tile.fire("load");
@@ -221,6 +233,9 @@ it("falls back once after a failed tile batch and detaches tile listeners on unm
 it("does not fall back for a single missing tile when others load, reports street failure once", async () => {
   mount();
   await screen.findByText("Street");
+  await waitFor(() =>
+    expect(document.querySelector(".leaflet-control-scale")).not.toBeNull(),
+  );
   act(() => {
     tile.fire("tileerror", { tile: document.createElement("img") });
     tile.fire("tileload");
