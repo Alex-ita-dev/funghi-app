@@ -1,4 +1,5 @@
 // @vitest-environment jsdom
+import * as React from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
   act,
@@ -231,6 +232,60 @@ describe("React settings and onboarding", () => {
     await user.click(screen.getByRole("button", { name: "Annulla" }));
     expect(cancelled).toHaveBeenCalledOnce();
     expect((await storage.readSettings([])).profile.nickname).toBe("");
+  });
+  it("discards a failed profile reconfiguration without leaking draft settings", async () => {
+    const user = userEvent.setup();
+    await storage.writeSettings({ onboardingCompleted: true });
+    const original = await storage.readSettings([]);
+    function Editor() {
+      const { ready, settings } = usePreferences();
+      const [editing, setEditing] = React.useState(true);
+      if (!ready) return null;
+      return (
+        <>
+          {editing && (
+            <Onboarding
+              onDone={() => setEditing(false)}
+              onCancel={() => setEditing(false)}
+            />
+          )}
+          <output data-testid="current-settings">
+            {JSON.stringify(settings)}
+          </output>
+        </>
+      );
+    }
+    render(
+      <PreferencesProvider>
+        <Editor />
+      </PreferencesProvider>,
+    );
+    await screen.findByRole("heading", { name: "Benvenuto in MycoTrail" });
+    await user.click(screen.getByRole("button", { name: "Inizia" }));
+    await user.type(
+      screen.getByLabelText("Nome o nickname"),
+      "Unsaved nickname",
+    );
+    await user.click(screen.getByRole("button", { name: "Continua" }));
+    await user.selectOptions(screen.getByLabelText("Paese"), "GB");
+    for (let i = 0; i < 4; i++)
+      await user.click(
+        screen.getByRole("button", { name: "Continue", exact: true }),
+      );
+    vi.spyOn(storage, "writeSettings").mockRejectedValueOnce(
+      new Error("quota"),
+    );
+    await user.click(
+      screen.getByRole("button", { name: "Head into the forest", exact: true }),
+    );
+    await screen.findByRole("alert");
+    await user.click(
+      screen.getByRole("button", { name: "Cancel", exact: true }),
+    );
+    expect(
+      JSON.parse(screen.getByTestId("current-settings").textContent!),
+    ).toEqual(original);
+    expect(await storage.readSettings([])).toEqual(original);
   });
   it("retains an active outing and GPS watch while opening and cancelling the profile editor", async () => {
     const user = userEvent.setup();

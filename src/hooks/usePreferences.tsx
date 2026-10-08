@@ -58,12 +58,12 @@ export function PreferencesProvider({ children }: { children: ReactNode }) {
   }, []);
   const save = useCallback((patch: SettingsPatch) => {
     const seq = ++revision.current;
-    setSettings((current) =>
-      mergeSettings(current, {
-        ...patch,
-        onboardingCompleted: current.onboardingCompleted,
-      }),
-    );
+    // A profile draft is transactional: failed submission followed by Cancel
+    // must leave the current profile, language and units unchanged.
+    // Ordinary settings retain their immediate appearance preview.
+    if (patch.onboardingCompleted === undefined) {
+      setSettings((current) => mergeSettings(current, patch));
+    }
     setSaving(true);
     const operation = tail.current
       .then(() => writeSettings(patch))

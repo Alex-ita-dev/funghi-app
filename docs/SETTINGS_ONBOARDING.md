@@ -69,3 +69,13 @@ Meteo e MycoScore potranno leggere `Preferences` e i formatter; Squad/account po
 6. Provare GPS reale su percorso noto: questa fase non certifica sensori, consumo batteria o tracking nativo in background.
 
 Limiti noti: bundle principale sopra 500 kB (sei cataloghi offline inclusi); avviso preesistente `use client` di lucide-react; manifest/static metadata d'installazione in italiano, mentre UI e titolo documento seguono la lingua. Nessuna revisione linguistica esterna dei cataloghi. Il numero SOS resta 112 come nella V2, non è un selettore automatico di numeri d'emergenza per paese.
+
+## Ripresa verifica — 8 ottobre 2026
+
+Revisione ripresa dal commit `c35587d`, senza ricreare i blocchi 1/2 o modificare il formato del taccuino.
+
+- Corretta una regressione riprodotta con un test: dopo un errore di salvataggio della riconfigurazione, Annulla lasciava nickname, paese, lingua e unità della bozza nello stato React, pur senza averli salvati. Ora la conferma del profilo applica la bozza soltanto dopo il completamento della transazione; le normali impostazioni mantengono l'anteprima immediata.
+- Il nuovo test fallisce sul codice precedente e passa con la correzione. Suite completa: **41/41 test superati**. Build di produzione (incluso `tsc --noEmit`) e `git diff --check` superati. Restano i due avvisi di build già indicati sopra.
+- E2E Chromium tentati e bloccati prima di aprire l'app: eseguibile Playwright mancante. L'installazione restituisce un archivio Chrome non valido (`End of central directory record signature not found`); nessun browser locale alternativo trovato. Android Chromium e WebKit non eseguiti; nessuno dei 42 casi E2E viene dichiarato superato. Layout, screenshot e GPS reale rimangono da verificare nel browser/dispositivo.
+- La consultazione dei workflow associati al commit di partenza non ha restituito esecuzioni PR. Non è quindi disponibile una conferma CI dei test browser in questa revisione.
+- Nessuna modifica a `main`, nessun merge e nessuna pubblicazione effettuati.
