@@ -18,7 +18,7 @@
 - PWA con icona Home e cache dell'interfaccia. La cartografia non viene precaricata per l'uso offline.
 - Gestione dei permessi negati, GPS impreciso, assenza di rete e problemi di salvataggio.
 
-Non contiene account, sincronizzazione, Squad, foto, riconoscimento AI o pendenze/versanti calcolati. Nessuna chiave necessaria per Topografica/Stradale; `VITE_MAPTILER_KEY` serve per Satellite/Outdoor. Dettagli e percorso nativo in [V2_OUTDOOR.md](docs/V2_OUTDOOR.md).
+Non contiene account, sincronizzazione, Squad, foto, riconoscimento AI o pendenze/versanti calcolati. Nessuna chiave necessaria per Topografica/Stradale; `VITE_MAPTILER_KEY` serve per Satellite/Outdoor. Dettagli e percorso nativo in [V2_OUTDOOR.md](docs/V2_OUTDOOR.md). Rifiniture, persistenza e fallback: [MAP_EXPERIENCE.md](docs/MAP_EXPERIENCE.md).
 
 ## Sviluppo
 

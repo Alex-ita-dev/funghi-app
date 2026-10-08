@@ -468,4 +468,11 @@ export default {
   "Info e privacy": "Info e privacy",
   "Dati e backup": "Dati e backup",
   "Specie preferite": "Specie preferite",
+  "Outdoor / Sentieri": "Outdoor / Sentieri",
+  "Al momento non disponibile": "Al momento non disponibile",
+  "Mappa non disponibile. Mostriamo {{name}}.":
+    "Mappa non disponibile. Mostriamo {{name}}.",
+  "GPS non disponibile": "GPS non disponibile",
+  "Precisione scarsa · ±{{accuracy}}": "Precisione scarsa · ±{{accuracy}}",
+  "GPS non autorizzato": "GPS non autorizzato",
 } as const;

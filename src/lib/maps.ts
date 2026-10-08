@@ -38,7 +38,7 @@ export function createMapLayers(publicKey = ""): readonly MapLayer[] {
     },
     {
       id: "outdoor",
-      name: "Outdoor",
+      name: "Outdoor / Sentieri",
       description: "Sentieri e rilievo ombreggiato · MapTiler",
       url: key
         ? `https://api.maptiler.com/maps/outdoor-v4/256/{z}/{x}/{y}.png?key=${key}`
@@ -63,7 +63,10 @@ export function resolveMapLayer(value: unknown, layers = mapLayers): MapLayer {
 export const mapPreferenceKey = "mycotrail.map-layer.v2";
 export function readMapPreference(): MapLayerId {
   try {
-    return resolveMapLayer(localStorage.getItem(mapPreferenceKey)).id;
+    const value = localStorage.getItem(mapPreferenceKey);
+    return mapLayers.some((layer) => layer.id === value)
+      ? (value as MapLayerId)
+      : "topo";
   } catch {
     return "topo";
   }
@@ -83,3 +86,33 @@ export type TerrainSample = {
   slopeDeg: number | null;
   aspectDeg: number | null;
 };
+
+// Presentation-only state, separate from the journal and its backup format.
+export const mapViewportKey = "mycotrail.map-viewport.v1";
+export type MapViewport = { lat: number; lng: number; zoom: number };
+export function readMapViewport(): MapViewport | null {
+  try {
+    const value = JSON.parse(localStorage.getItem(mapViewportKey) ?? "null");
+    if (
+      !value ||
+      !Number.isFinite(value.lat) ||
+      Math.abs(value.lat) > 85.051129 ||
+      !Number.isFinite(value.lng) ||
+      Math.abs(value.lng) > 180 ||
+      !Number.isFinite(value.zoom) ||
+      value.zoom < 0 ||
+      value.zoom > 19
+    )
+      return null;
+    return { lat: value.lat, lng: value.lng, zoom: value.zoom };
+  } catch {
+    return null;
+  }
+}
+export function writeMapViewport(value: MapViewport): void {
+  try {
+    localStorage.setItem(mapViewportKey, JSON.stringify(value));
+  } catch {
+    /* Browsing the map must work with storage disabled/full. */
+  }
+}

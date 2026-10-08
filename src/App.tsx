@@ -54,12 +54,7 @@ import { usePreferences } from "./hooks/usePreferences";
 import { PreferencesSettings } from "./components/PreferencesSettings";
 import { Onboarding } from "./components/Onboarding";
 import { needsOnboarding } from "./lib/preferences";
-import {
-  mapPreferenceKey,
-  readMapPreference,
-  resolveMapLayer,
-  type MapLayerId,
-} from "./lib/maps";
+import { readMapViewport, resolveMapLayer, type MapLayerId } from "./lib/maps";
 import {
   addFix,
   clock,
@@ -136,7 +131,13 @@ export default function App() {
 }
 
 function Journal() {
-  const { settings, tr, metres, dateLabel } = usePreferences();
+  const {
+    settings,
+    tr,
+    metres,
+    dateLabel,
+    save: savePreferences,
+  } = usePreferences();
   const [editProfile, setEditProfile] = useState(false);
   const { data, update, error: storageError, saving, locked } = useData();
   const [page, setPage] = useState<Page>("map");
@@ -153,18 +154,17 @@ function Journal() {
   const [help, setHelp] = useState(false);
   const [sos, setSos] = useState(false);
   const [layerPicker, setLayerPicker] = useState(false);
-  const [layerId, setLayerId] = useState<MapLayerId>(readMapPreference);
   const [fullscreen, setFullscreen] = useState(false);
+  const [fallbackLayer, setFallbackLayer] = useState<MapLayerId | null>(null);
+  const failedProviders = useRef(new Set<MapLayerId>());
   const mapCardRef = useRef<HTMLDivElement>(null);
-  const baseLayer = resolveMapLayer(layerId);
+  const layerId = settings.preferences.mapLayer;
+  const baseLayer = resolveMapLayer(fallbackLayer ?? layerId);
+  const mapFallback = fallbackLayer !== null || baseLayer.id !== layerId;
   function selectLayer(id: MapLayerId) {
-    const selected = resolveMapLayer(id).id;
-    setLayerId(selected);
-    try {
-      localStorage.setItem(mapPreferenceKey, selected);
-    } catch {
-      /* Preference is optional; the journal is unaffected. */
-    }
+    failedProviders.current.clear();
+    setFallbackLayer(null);
+    void savePreferences({ preferences: { mapLayer: id } }).catch(() => {});
   }
   const [returning, setReturning] = useState(false);
   const [selectedTrip, setSelectedTrip] = useState<string | null>(null);
@@ -235,12 +235,28 @@ function Journal() {
   const viewedTrip = data?.trips.find((t) => t.id === selectedTrip) ?? active;
   const car = viewedTrip ? viewedTrip.car : (data?.car ?? null);
   const fresh = usableFix(gps.fix, now);
+  const gpsLabel = gps.pending
+    ? tr("Ricerca GPS…")
+    : gps.permission === "denied"
+      ? tr("GPS non autorizzato")
+      : gps.permission === "unsupported" || gps.error
+        ? tr("GPS non disponibile")
+        : fresh
+          ? `GPS · ±${metres(gps.fix!.accuracy)}`
+          : gps.fix && now - gps.fix.timestamp <= 30000 && gps.fix.accuracy > 50
+            ? tr("Precisione scarsa · ±{{accuracy}}", {
+                accuracy: metres(gps.fix.accuracy),
+              })
+            : gps.enabled
+              ? tr("In attesa del GPS")
+              : tr("GPS da attivare");
   const recording = active?.status === "active";
   useEffect(() => {
     if (!data || initializedView.current) return;
     initializedView.current = true;
     const last = openTrip(data)?.points.at(-1) ?? data.car ?? data.finds[0];
-    if (last) setRequest({ id: Date.now(), center: last });
+    if (last && !readMapViewport())
+      setRequest({ id: Date.now(), center: last });
   }, [data]);
   useEffect(() => {
     const id = setInterval(() => setNow(Date.now()), 1000);
@@ -636,15 +652,12 @@ function Journal() {
               </p>
             </div>
             {page === "map" ? (
-              <div className={`gps-badge ${fresh ? "good" : ""}`}>
+              <div
+                className={`gps-badge ${fresh && !gps.error && !gps.pending ? "good" : ""}`}
+                role="status"
+              >
                 <span />
-                {fresh
-                  ? `GPS · ±${metres(gps.fix!.accuracy)}`
-                  : gps.pending
-                    ? tr("Ricerca GPS…")
-                    : gps.enabled
-                      ? tr("In attesa del GPS")
-                      : tr("GPS da attivare")}
+                {gpsLabel}
               </div>
             ) : page === "finds" ? (
               <button
@@ -695,7 +708,9 @@ function Journal() {
               <div className="map-top-label">
                 <button
                   className="map-layer layer-button"
-                  onClick={() => setLayerPicker(true)}
+                  onClick={() => setLayerPicker((open) => !open)}
+                  aria-expanded={layerPicker}
+                  aria-controls="map-layer-panel"
                   aria-label={tr("Scegli mappa: {{name}}", {
                     name: tr(baseLayer.name),
                   })}
@@ -730,10 +745,30 @@ function Journal() {
                   </button>
                 </div>
               </div>
+              {layerPicker && (
+                <MapLayerPicker
+                  selected={baseLayer.id}
+                  onSelect={selectLayer}
+                  onClose={() => setLayerPicker(false)}
+                />
+              )}
+              {mapFallback && (
+                <p className="map-provider-notice" role="status">
+                  {tr("Mappa non disponibile. Mostriamo {{name}}.", {
+                    name: tr(baseLayer.name),
+                  })}
+                </p>
+              )}
               <div className="map-stage">
                 <MapView
                   baseLayer={baseLayer}
-                  onFallback={() => selectLayer("street")}
+                  onFallback={() => {
+                    failedProviders.current.add(baseLayer.id);
+                    const next = (["street", "topo"] as const).find(
+                      (id) => !failedProviders.current.has(id),
+                    );
+                    if (next) setFallbackLayer(next);
+                  }}
                   fix={gps.fix}
                   car={car}
                   finds={data.finds}
@@ -805,12 +840,7 @@ function Journal() {
               {fullscreen && (
                 <div className="fullscreen-actions">
                   <div className="fullscreen-status" role="status">
-                    {gps.pending
-                      ? tr("Ricerca GPS…")
-                      : fresh
-                        ? `GPS ±${metres(gps.fix!.accuracy)}`
-                        : tr("GPS assente o da aggiornare")}{" "}
-                    ·{" "}
+                    {gpsLabel} ·{" "}
                     {recording
                       ? tr("Registrazione in corso · schermo acceso")
                       : active
@@ -1579,13 +1609,6 @@ function Journal() {
             </button>
           </div>
         </Modal>
-      )}
-      {layerPicker && (
-        <MapLayerPicker
-          selected={layerId}
-          onSelect={selectLayer}
-          onClose={() => setLayerPicker(false)}
-        />
       )}
       {sos && (
         <SosPanel

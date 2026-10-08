@@ -470,4 +470,11 @@ export default {
   "Info e privacy": "Info und Datenschutz",
   "Dati e backup": "Daten und Sicherungen",
   "Specie preferite": "Bevorzugte Arten",
+  "Outdoor / Sentieri": "Outdoor / Wanderwege",
+  "Al momento non disponibile": "Derzeit nicht verfügbar",
+  "Mappa non disponibile. Mostriamo {{name}}.":
+    "Karte nicht verfügbar. {{name}} wird angezeigt.",
+  "GPS non disponibile": "GPS nicht verfügbar",
+  "Precisione scarsa · ±{{accuracy}}": "Geringe Genauigkeit · ±{{accuracy}}",
+  "GPS non autorizzato": "GPS-Zugriff verweigert",
 } satisfies Record<keyof typeof it, string>;

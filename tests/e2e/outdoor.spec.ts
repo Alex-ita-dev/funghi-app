@@ -6,7 +6,14 @@ test.beforeEach(async ({ page }) => {
 async function setup(page: Page, denied = false) {
   await page.route(
     /https:\/\/(.*tile\.opentopomap\.org|tile\.openstreetmap\.org|api\.maptiler\.com)\/.*/,
-    (r) => r.abort(),
+    (r) =>
+      r.fulfill({
+        contentType: "image/png",
+        body: Buffer.from(
+          "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jRZkAAAAASUVORK5CYII=",
+          "base64",
+        ),
+      }),
   );
   await page.addInitScript(
     ({ denied }) => {
@@ -80,9 +87,9 @@ test("map preference, failure fallback and missing provider key", async ({
   await expect(
     page.getByRole("button", { name: "Scegli mappa: Stradale" }),
   ).toBeVisible();
+  await page.route(/https:\/\/.*tile\.opentopomap\.org\/.*/, (r) => r.abort());
   await page.getByRole("button", { name: "Scegli mappa: Stradale" }).click();
   await page.getByRole("button", { name: /^Topografica/ }).click();
-  await page.getByRole("button", { name: "Usa stradale" }).click();
   await expect(
     page.getByRole("button", { name: "Scegli mappa: Stradale" }),
   ).toBeVisible();
@@ -175,4 +182,38 @@ test("heading uses GPS course and expires instead of leaving a stale arrow", asy
       name: /Attiva bussola.*Direzione non disponibile/,
     }),
   ).toBeVisible();
+});
+
+test("layer panel keeps attribution visible and scale follows preferred units", async ({
+  page,
+}) => {
+  await setup(page);
+  await page.goto("/");
+  const toggle = page.getByRole("button", {
+    name: "Scegli mappa: Topografica",
+  });
+  await toggle.click();
+  const panel = page.getByRole("region", { name: "Scegli la mappa" });
+  await expect(panel).toBeVisible();
+  const attribution = page.locator(".leaflet-control-attribution");
+  await expect(attribution).toContainText("OpenTopoMap");
+  const panelBox = await panel.boundingBox();
+  const creditBox = await attribution.boundingBox();
+  expect(panelBox!.y + panelBox!.height).toBeLessThanOrEqual(creditBox!.y);
+  await page.keyboard.press("Escape");
+  await expect(panel).toHaveCount(0);
+  await expect(toggle).toBeFocused();
+  const nav = page.getByRole("navigation", {
+    name:
+      page.viewportSize()!.width < 701
+        ? "Navigazione mobile"
+        : "Navigazione principale",
+  });
+  await nav.getByRole("button", { name: "Impostazioni", exact: true }).click();
+  await page.getByLabel("Distanza", { exact: true }).selectOption("imperial");
+  await nav.getByRole("button", { name: "Esplora", exact: true }).click();
+  await expect(page.locator(".leaflet-control-scale-line")).toHaveCount(1);
+  await expect(page.locator(".leaflet-control-scale-line")).toContainText(
+    /ft|mi/,
+  );
 });
