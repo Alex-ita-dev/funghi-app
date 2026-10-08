@@ -50,6 +50,10 @@ import { CompassControl } from "./components/CompassControl";
 import { MapLayerPicker } from "./components/MapLayerPicker";
 import { SosPanel } from "./components/SosPanel";
 import { GpsSettings } from "./components/GpsSettings";
+import { usePreferences } from "./hooks/usePreferences";
+import { PreferencesSettings } from "./components/PreferencesSettings";
+import { Onboarding } from "./components/Onboarding";
+import { needsOnboarding } from "./lib/preferences";
 import {
   mapPreferenceKey,
   readMapPreference,
@@ -59,10 +63,8 @@ import {
 import {
   addFix,
   clock,
-  dateLabel,
   distance,
   duration,
-  metres,
   openTrip,
   pauseTrip,
   recoverData,
@@ -100,6 +102,42 @@ const tabs = [
 ] as const;
 
 export default function App() {
+  const { ready, error, settings, tr } = usePreferences();
+  if (!ready)
+    return (
+      <div className="loading">
+        <Brand />
+        <h1>
+          {tr(
+            error
+              ? "Non riusciamo a leggere le preferenze."
+              : "Apriamo il tuo taccuino…",
+          )}
+        </h1>
+        {error && (
+          <>
+            <p>
+              {tr(
+                "I dati sono al sicuro: riprova senza cancellare i dati del sito.",
+              )}
+            </p>
+            <button
+              className="button primary"
+              onClick={() => location.reload()}
+            >
+              {tr("Riprova")}
+            </button>
+          </>
+        )}
+      </div>
+    );
+  if (needsOnboarding(settings)) return <Onboarding onDone={() => {}} />;
+  return <Journal />;
+}
+
+function Journal() {
+  const { settings, tr, metres, dateLabel } = usePreferences();
+  const [editProfile, setEditProfile] = useState(false);
   const { data, update, error: storageError, saving, locked } = useData();
   const [page, setPage] = useState<Page>("map");
   const [notice, setNotice] = useState("");
@@ -287,7 +325,10 @@ export default function App() {
       const fix = await gps.locate();
       if (!usableFix(fix)) {
         setNotice(
-          `GPS ancora impreciso (±${Math.round(fix.accuracy)} m). Attendi un segnale entro 50 m oppure scegli il punto sulla mappa.`,
+          tr(
+            "GPS ancora impreciso (±{{accuracy}}). Attendi un segnale entro {{limit}} oppure scegli il punto sulla mappa.",
+            { accuracy: metres(fix.accuracy), limit: metres(50) },
+          ),
         );
         return;
       }
@@ -306,7 +347,9 @@ export default function App() {
   function start() {
     if (data && data.trips.length >= 500) {
       setNotice(
-        "Limite di 500 uscite raggiunto. Esporta un backup e rimuovi alcune uscite.",
+        tr(
+          "Limite di 500 uscite raggiunto. Esporta un backup e rimuovi alcune uscite.",
+        ),
       );
       return;
     }
@@ -316,7 +359,7 @@ export default function App() {
         if (openTrip(old) || old.trips.length >= 500) return old;
         const trip: Trip = {
           id: crypto.randomUUID(),
-          name: `Uscita del ${dateLabel(stamp)}`,
+          name: tr("Uscita del {{date}}", { date: dateLabel(stamp) }),
           startedAt: stamp,
           endedAt: null,
           status: "active",
@@ -332,7 +375,7 @@ export default function App() {
       setReturning(false);
       center(fix);
       setNotice(
-        "Registrazione avviata. Tieni MycoTrail visibile durante l’uscita.",
+        tr("Registrazione avviata. Tieni MycoTrail visibile durante l’uscita."),
       );
     });
   }
@@ -346,14 +389,16 @@ export default function App() {
       }));
       setSelectedTrip(null);
       center(fix);
-      setNotice("Registrazione ripresa in un nuovo tratto.");
+      setNotice(tr("Registrazione ripresa in un nuovo tratto."));
     });
   }
   function stop() {
     setConfirm({
-      title: "Concludi questa uscita?",
-      text: "Il percorso rimarrà nelle tue uscite. Potrai rivederlo ed esportarlo quando vuoi.",
-      label: "Concludi e salva",
+      title: tr("Concludi questa uscita?"),
+      text: tr(
+        "Il percorso rimarrà nelle tue uscite. Potrai rivederlo ed esportarlo quando vuoi.",
+      ),
+      label: tr("Concludi e salva"),
       action: () => {
         const id = active?.id;
         update((old) => ({
@@ -365,7 +410,7 @@ export default function App() {
           ),
         }));
         setSelectedTrip(id ?? null);
-        setNotice("Uscita conclusa. Trovi il percorso in Le mie uscite.");
+        setNotice(tr("Uscita conclusa. Trovi il percorso in Le mie uscite."));
       },
     });
   }
@@ -381,7 +426,7 @@ export default function App() {
     setSelectedTrip(null);
     setReturning(false);
     center(value);
-    setNotice("Posizione auto salvata.");
+    setNotice(tr("Posizione auto salvata."));
   }
   function chooseLocation(kind: "find" | "car", source: "gps" | "map") {
     setChoose(null);
@@ -430,22 +475,27 @@ export default function App() {
     if (!file) return;
     try {
       if (file.size > 25 * 1024 * 1024)
-        throw new Error("Il file supera 25 MB.");
+        throw new Error(tr("Il file supera 25 MB."));
       const imported = recoverData(JSON.parse(await file.text()));
       setConfirm({
-        title: "Ripristina il backup?",
-        text: `Contiene ${imported.finds.length} punti e ${imported.trips.length} uscite. Sostituirà i dati presenti su questo dispositivo: esporta prima un backup se vuoi conservarli.`,
-        label: "Ripristina dati",
+        title: tr("Ripristina il backup?"),
+        text: tr(
+          "Contiene {{places}} punti e {{outings}} uscite. Sostituirà i dati presenti su questo dispositivo: esporta prima un backup se vuoi conservarli.",
+          { places: imported.finds.length, outings: imported.trips.length },
+        ),
+        label: tr("Ripristina dati"),
         action: () => {
           update(() => imported);
           setSelectedTrip(null);
           setReturning(false);
-          setNotice("Backup ripristinato. Le uscite aperte sono in pausa.");
+          setNotice(tr("Backup ripristinato. Le uscite aperte sono in pausa."));
         },
       });
     } catch {
       setNotice(
-        "Backup non valido o troppo grande. Scegli un file JSON esportato da MycoTrail (massimo 25 MB).",
+        tr(
+          "Backup non valido o troppo grande. Scegli un file JSON esportato da MycoTrail (massimo 25 MB).",
+        ),
       );
     }
   }
@@ -456,19 +506,22 @@ export default function App() {
         <Brand />
         <h1>
           {locked
-            ? "MycoTrail è già aperta"
+            ? tr("MycoTrail è già aperta")
             : storageError
-              ? "Non riusciamo ad aprire il taccuino"
-              : "Apriamo il tuo taccuino…"}
+              ? tr("Non riusciamo ad aprire il taccuino")
+              : tr("Apriamo il tuo taccuino…")}
         </h1>
         <p>
           {locked
-            ? "Chiudi l’altra scheda di MycoTrail, poi ricarica questa pagina."
-            : storageError || "Un momento, prepariamo la mappa."}
+            ? tr(
+                "Chiudi l’altra scheda di MycoTrail, poi ricarica questa pagina.",
+              )
+            : tr(storageError) || tr("Un momento, prepariamo la mappa.")}
         </p>
         {(locked || storageError) && (
           <button className="button primary" onClick={() => location.reload()}>
-            Riprova
+            {" "}
+            {tr("Riprova")}{" "}
           </button>
         )}
       </div>
@@ -486,8 +539,8 @@ export default function App() {
     <div className={`app-shell ${fullscreen ? "map-is-fullscreen" : ""}`}>
       <aside className="sidebar">
         <Brand />
-        <div className="sidebar-section-label">IL TUO TACCUINO</div>
-        <nav aria-label="Navigazione principale">
+        <div className="sidebar-section-label">{tr("IL TUO TACCUINO")}</div>
+        <nav aria-label={tr("Navigazione principale")}>
           {tabs.map(({ key, title, Icon }) => (
             <button
               key={key}
@@ -498,7 +551,7 @@ export default function App() {
               }}
             >
               <Icon size={21} />
-              <span>{title}</span>
+              <span>{tr(title)}</span>
               {key === "finds" && data.finds.length > 0 && (
                 <span className="nav-count">{data.finds.length}</span>
               )}
@@ -508,11 +561,11 @@ export default function App() {
         <div className="sidebar-bottom">
           <div className="sidebar-note">
             <Trees size={30} />
-            <strong>Ogni uscita, una scoperta.</strong>
+            <strong>{tr("Ogni uscita, una scoperta.")}</strong>
             <p>
-              Custodisci i tuoi luoghi.
-              <br />
-              Lascia al bosco la sua bellezza.
+              {" "}
+              {tr("Custodisci i tuoi luoghi.")} <br />{" "}
+              {tr("Lascia al bosco la sua bellezza.")}{" "}
             </p>
           </div>
           <button className="local-profile" onClick={() => setPage("settings")}>
@@ -520,8 +573,10 @@ export default function App() {
               <Leaf size={19} />
             </span>
             <span>
-              <strong>Il mio taccuino</strong>
-              <small>Salvato su questo dispositivo</small>
+              <strong>
+                {settings.profile.nickname || tr("Il mio taccuino")}
+              </strong>
+              <small>{tr("Salvato su questo dispositivo")}</small>
             </span>
             <ChevronRight size={17} />
           </button>
@@ -533,14 +588,15 @@ export default function App() {
             <Brand />
           </div>
           <div className="breadcrumb">
-            Il tuo spazio <ChevronRight size={14} />
-            <strong>{tabs.find((t) => t.key === page)?.title}</strong>
+            {" "}
+            {tr("Il tuo spazio")} <ChevronRight size={14} />
+            <strong>{tr(tabs.find((t) => t.key === page)!.title)}</strong>
           </div>
           <div className="topbar-right">
             <span className="version-pill">V2 · OUTDOOR</span>
             <button
               className="icon-button help-button"
-              aria-label="Come funziona MycoTrail"
+              aria-label={tr("Come funziona MycoTrail")}
               onClick={() => setHelp(true)}
             >
               <CircleHelp size={21} />
@@ -553,94 +609,104 @@ export default function App() {
             <div>
               <div className="eyebrow">
                 {page === "map"
-                  ? "IL PROSSIMO SENTIERO TI ASPETTA"
+                  ? tr("IL PROSSIMO SENTIERO TI ASPETTA")
                   : page === "finds"
-                    ? "I LUOGHI CHE VALE LA PENA RICORDARE"
+                    ? tr("I LUOGHI CHE VALE LA PENA RICORDARE")
                     : page === "trips"
-                      ? "UN PASSO DOPO L’ALTRO"
-                      : "IL TUO SPAZIO, LE TUE SCELTE"}
+                      ? tr("UN PASSO DOPO L’ALTRO")
+                      : tr("IL TUO SPAZIO, LE TUE SCELTE")}
               </div>
               <h1>
                 {page === "map"
-                  ? "Ci vediamo nel bosco."
+                  ? tr("Ci vediamo nel bosco.")
                   : page === "finds"
-                    ? "Il tuo piccolo tesoro."
+                    ? tr("Il tuo piccolo tesoro.")
                     : page === "trips"
-                      ? "Storie di sentieri."
-                      : "Pronti a partire."}
+                      ? tr("Storie di sentieri.")
+                      : tr("Pronti a partire.")}
               </h1>
               <p>
                 {page === "map"
-                  ? "Segui il tuo percorso. Ritrova i tuoi posti."
+                  ? tr("Segui il tuo percorso. Ritrova i tuoi posti.")
                   : page === "finds"
-                    ? "Ritrovamenti e fungaie, custoditi nel tuo taccuino."
+                    ? tr("Ritrovamenti e fungaie, custoditi nel tuo taccuino.")
                     : page === "trips"
-                      ? "Ogni percorso rimane qui, pronto da ripercorrere."
-                      : "Gestisci i dati e porta MycoTrail sempre con te."}
+                      ? tr("Ogni percorso rimane qui, pronto da ripercorrere.")
+                      : tr("Gestisci i dati e porta MycoTrail sempre con te.")}
               </p>
             </div>
             {page === "map" ? (
               <div className={`gps-badge ${fresh ? "good" : ""}`}>
                 <span />
                 {fresh
-                  ? `GPS · ±${Math.round(gps.fix!.accuracy)} m`
+                  ? `GPS · ±${metres(gps.fix!.accuracy)}`
                   : gps.pending
-                    ? "Ricerca GPS…"
+                    ? tr("Ricerca GPS…")
                     : gps.enabled
-                      ? "In attesa del GPS"
-                      : "GPS da attivare"}
+                      ? tr("In attesa del GPS")
+                      : tr("GPS da attivare")}
               </div>
             ) : page === "finds" ? (
               <button
                 className="button primary"
                 onClick={() => setChoose("find")}
               >
-                <Plus size={18} />
-                Nuovo punto
+                <Plus size={18} /> {tr("Nuovo punto")}{" "}
               </button>
             ) : page === "trips" ? (
               <div className="total-distance">
                 <Footprints size={20} />
-                {metres(totalDistance)} esplorati
+                {metres(totalDistance)} {tr("esplorati")}{" "}
               </div>
             ) : null}
           </div>
           {storageError && (
             <div className="banner error" role="alert">
-              {storageError}
-              <button onClick={backup}>Esporta backup</button>
+              {tr(storageError)}
+              <button onClick={backup}>{tr("Esporta backup")}</button>
+            </div>
+          )}
+          {!settings.onboardingCompleted && (
+            <div className="banner profile-banner">
+              <span>{tr("Completa il tuo profilo MycoTrail")}</span>
+              <button onClick={() => setEditProfile(true)}>
+                {tr("Configura profilo")}
+              </button>
             </div>
           )}
           {!online && (
             <div className="banner">
-              <WifiOff size={18} />
-              Sei offline. I dati restano sul dispositivo; nuove aree della
-              mappa richiedono internet.
+              <WifiOff size={18} />{" "}
+              {tr(
+                "Sei offline. I dati restano sul dispositivo; nuove aree della mappa richiedono internet.",
+              )}{" "}
             </div>
           )}
           <section
             className={`explore-layout ${page !== "map" ? "hidden" : ""}`}
-            aria-label="Esplora la mappa"
+            aria-label={tr("Esplora la mappa")}
           >
             <div
               ref={mapCardRef}
               className={`map-card ${fullscreen ? "map-fullscreen" : ""}`}
               role={fullscreen ? "region" : undefined}
-              aria-label={fullscreen ? "Mappa a schermo intero" : undefined}
+              aria-label={fullscreen ? tr("Mappa a schermo intero") : undefined}
             >
               <div className="map-top-label">
                 <button
                   className="map-layer layer-button"
                   onClick={() => setLayerPicker(true)}
-                  aria-label={`Scegli mappa: ${baseLayer.name}`}
+                  aria-label={tr("Scegli mappa: {{name}}", {
+                    name: tr(baseLayer.name),
+                  })}
                 >
                   <Layers size={16} />
-                  {baseLayer.name}
+                  {tr(baseLayer.name)}
                 </button>
                 <span className="map-area">
                   {gps.fix
                     ? `${gps.fix.lat.toFixed(3)}°, ${gps.fix.lng.toFixed(3)}°`
-                    : "Vista iniziale · Valdarno"}
+                    : tr("Vista iniziale · Valdarno")}
                 </span>
                 <div className="map-header-actions">
                   <button className="sos-button" onClick={() => setSos(true)}>
@@ -648,8 +714,12 @@ export default function App() {
                   </button>
                   <button
                     className="icon-button expand-map"
-                    title={fullscreen ? "Riduci mappa" : "Espandi mappa"}
-                    aria-label={fullscreen ? "Riduci mappa" : "Espandi mappa"}
+                    title={
+                      fullscreen ? tr("Riduci mappa") : tr("Espandi mappa")
+                    }
+                    aria-label={
+                      fullscreen ? tr("Riduci mappa") : tr("Espandi mappa")
+                    }
                     onClick={() => setFullscreen((value) => !value)}
                   >
                     {fullscreen ? (
@@ -681,7 +751,7 @@ export default function App() {
                 />
                 <button
                   className="locate-button"
-                  aria-label="Centra sulla mia posizione"
+                  aria-label={tr("Centra sulla mia posizione")}
                   disabled={busy}
                   onClick={() => {
                     void withFix(center);
@@ -693,14 +763,15 @@ export default function App() {
                   <div className="pick-banner">
                     <MapPin size={18} />
                     <span>
-                      Tocca la mappa per{" "}
+                      {" "}
+                      {tr("Tocca la mappa per")}{" "}
                       {pick === "car"
-                        ? "segnare l’auto"
-                        : "aggiungere un punto"}
+                        ? tr("segnare l’auto")
+                        : tr("aggiungere un punto")}
                     </span>
                     <button
                       className="icon-button"
-                      aria-label="Annulla selezione"
+                      aria-label={tr("Annulla selezione")}
                       onClick={() => setPick(null)}
                     >
                       <X size={18} />
@@ -713,8 +784,10 @@ export default function App() {
                       <Navigation size={22} />
                     </span>
                     <div>
-                      <strong>Il bosco comincia da qui.</strong>
-                      <p>Attiva la posizione per orientarti sulla mappa.</p>
+                      <strong>{tr("Il bosco comincia da qui.")}</strong>
+                      <p>
+                        {tr("Attiva la posizione per orientarti sulla mappa.")}
+                      </p>
                     </div>
                     <button
                       className="button primary"
@@ -723,7 +796,7 @@ export default function App() {
                         void withFix(center);
                       }}
                     >
-                      {busy ? "Ricerca…" : "Attiva GPS"}
+                      {busy ? tr("Ricerca…") : tr("Attiva GPS")}
                       <ArrowRight size={16} />
                     </button>
                   </div>
@@ -733,21 +806,23 @@ export default function App() {
                 <div className="fullscreen-actions">
                   <div className="fullscreen-status" role="status">
                     {gps.pending
-                      ? "Ricerca GPS…"
+                      ? tr("Ricerca GPS…")
                       : fresh
-                        ? `GPS ±${Math.round(gps.fix!.accuracy)} m`
-                        : "GPS assente o da aggiornare"}{" "}
+                        ? `GPS ±${metres(gps.fix!.accuracy)}`
+                        : tr("GPS assente o da aggiornare")}{" "}
                     ·{" "}
                     {recording
-                      ? "Registrazione in corso · schermo acceso"
+                      ? tr("Registrazione in corso · schermo acceso")
                       : active
-                        ? "Uscita in pausa"
-                        : "Nessuna registrazione"}
+                        ? tr("Uscita in pausa")
+                        : tr("Nessuna registrazione")}
                   </div>
                   {returning && (
                     <p className="fullscreen-return">
-                      Auto e traccia inquadrate. La traccia può avere
-                      interruzioni; non è un itinerario calcolato.
+                      {" "}
+                      {tr(
+                        "Auto e traccia inquadrate. La traccia può avere interruzioni; non è un itinerario calcolato.",
+                      )}{" "}
                     </p>
                   )}
                   <div className="fullscreen-action-grid">
@@ -756,8 +831,7 @@ export default function App() {
                       disabled={busy}
                       onClick={() => setChoose("find")}
                     >
-                      <MapPin size={18} />
-                      Salva punto
+                      <MapPin size={18} /> {tr("Salva punto")}{" "}
                     </button>
                     <button
                       className="button secondary"
@@ -765,20 +839,20 @@ export default function App() {
                       onClick={() =>
                         data.car
                           ? setConfirm({
-                              title: "Aggiorna la posizione auto?",
-                              text: "Sostituirai il punto auto corrente. Le uscite concluse lo conserveranno.",
-                              label: "Scegli nuova posizione",
+                              title: tr("Aggiorna la posizione auto?"),
+                              text: tr(
+                                "Sostituirai il punto auto corrente. Le uscite concluse lo conserveranno.",
+                              ),
+                              label: tr("Scegli nuova posizione"),
                               action: () => setChoose("car"),
                             })
                           : setChoose("car")
                       }
                     >
-                      <CarFront size={18} />
-                      Salva auto
+                      <CarFront size={18} /> {tr("Salva auto")}{" "}
                     </button>
                     <button className="button secondary" onClick={goBack}>
-                      <Navigation size={18} />
-                      Torna auto
+                      <Navigation size={18} /> {tr("Torna auto")}{" "}
                     </button>
                     <button
                       className="button primary"
@@ -799,17 +873,18 @@ export default function App() {
                     >
                       {recording ? <Pause size={18} /> : <Play size={18} />}
                       {recording
-                        ? "Pausa"
+                        ? tr("Pausa")
                         : active
-                          ? "Riprendi"
-                          : "Avvia uscita"}
+                          ? tr("Riprendi")
+                          : tr("Avvia uscita")}
                     </button>
                   </div>
                   {storageError && (
                     <p role="alert" className="inline-error">
-                      {storageError}
+                      {tr(storageError)}
                       <button className="text-button" onClick={backup}>
-                        Esporta backup
+                        {" "}
+                        {tr("Esporta backup")}{" "}
                       </button>
                     </p>
                   )}
@@ -817,28 +892,24 @@ export default function App() {
               )}
               <div className="map-legend">
                 <span>
-                  <i className="legend-dot blue" />
-                  Tu
+                  <i className="legend-dot blue" /> {tr("Tu")}{" "}
                 </span>
                 <span>
-                  <i className="legend-dot green" />
-                  Auto
+                  <i className="legend-dot green" /> {tr("Auto")}{" "}
                 </span>
                 <span>
-                  <i className="legend-dot orange" />
-                  Ritrovamento
+                  <i className="legend-dot orange" /> {tr("Ritrovamento")}{" "}
                 </span>
                 <span>
-                  <Star size={12} />
-                  Fungaia
+                  <Star size={12} /> {tr("Fungaia")}{" "}
                 </span>
                 <span className="local-save">
                   <ShieldCheck size={14} />
                   {saving
-                    ? "Salvataggio…"
+                    ? tr("Salvataggio…")
                     : storageError
-                      ? "Dati non salvati"
-                      : "Dati sul dispositivo"}
+                      ? tr("Dati non salvati")
+                      : tr("Dati sul dispositivo")}
                 </span>
               </div>
             </div>
@@ -846,36 +917,44 @@ export default function App() {
               {returning ? (
                 <div className="outing-card return-card">
                   <div className="card-eyebrow">
-                    <Navigation size={16} />
-                    VERSO L’AUTO
+                    <Navigation size={16} /> {tr("VERSO L’AUTO")}{" "}
                   </div>
-                  <h2>Ripercorri i tuoi passi.</h2>
+                  <h2>{tr("Ripercorri i tuoi passi.")}</h2>
                   <p>
-                    Segui sulla mappa i tratti arancioni che hai registrato.
+                    {" "}
+                    {tr(
+                      "Segui sulla mappa i tratti arancioni che hai registrato.",
+                    )}{" "}
                   </p>
                   {car && gps.fix && (
                     <div className="return-distance">
                       {metres(distance(gps.fix, car))}
-                      <small>in linea d’aria dall’ultima posizione</small>
+                      <small>
+                        {tr("in linea d’aria dall’ultima posizione")}
+                      </small>
                     </div>
                   )}
                   <div className="info-note">
                     {viewedTrip?.points.length
-                      ? "La traccia può avere interruzioni. Non viene calcolato un percorso pedonale."
-                      : "Non c’è una traccia registrata per questa auto. Il segnaposto indica solo la sua posizione."}
+                      ? tr(
+                          "La traccia può avere interruzioni. Non viene calcolato un percorso pedonale.",
+                        )
+                      : tr(
+                          "Non c’è una traccia registrata per questa auto. Il segnaposto indica solo la sua posizione.",
+                        )}
                   </div>
                   <button
                     className="button secondary full"
                     onClick={() => fit(viewedTrip)}
                   >
-                    Inquadra auto e traccia
+                    {" "}
+                    {tr("Inquadra auto e traccia")}{" "}
                   </button>
                   <button
                     className="text-button full"
                     onClick={() => setReturning(false)}
                   >
-                    <ArrowLeft size={16} />
-                    Torna all’esplorazione
+                    <ArrowLeft size={16} /> {tr("Torna all’esplorazione")}{" "}
                   </button>
                 </div>
               ) : (
@@ -886,36 +965,29 @@ export default function App() {
                     />
                     {active
                       ? recording
-                        ? "USCITA IN CORSO"
-                        : "USCITA IN PAUSA"
-                      : "LA TUA PROSSIMA USCITA"}
+                        ? tr("USCITA IN CORSO")
+                        : tr("USCITA IN PAUSA")
+                      : tr("LA TUA PROSSIMA USCITA")}
                   </div>
                   <h2>
                     {active
-                      ? "Un passo alla volta."
-                      : "Prenditi un po’ di bosco."}
+                      ? tr("Un passo alla volta.")
+                      : tr("Prenditi un po’ di bosco.")}
                   </h2>
                   <p>
                     {active
                       ? recording
-                        ? "Stiamo custodendo il tuo percorso."
-                        : "La traccia è salvata. Riparti quando vuoi."
-                      : "Avvia il percorso e lascia spazio alla scoperta."}
+                        ? tr("Stiamo custodendo il tuo percorso.")
+                        : tr("La traccia è salvata. Riparti quando vuoi.")
+                      : tr("Avvia il percorso e lascia spazio alla scoperta.")}
                   </p>
                   <div className="trip-stats">
                     <div>
                       <strong>
-                        {active
-                          ? (trackDistance(active) / 1000).toLocaleString(
-                              "it-IT",
-                              { maximumFractionDigits: 2 },
-                            )
-                          : "0,00"}
-                        <small> km</small>
+                        {metres(active ? trackDistance(active) : 0)}
                       </strong>
                       <span>
-                        <Footprints size={13} />
-                        Percorso
+                        <Footprints size={13} /> {tr("Percorso")}{" "}
                       </span>
                     </div>
                     <div>
@@ -923,8 +995,7 @@ export default function App() {
                         {active ? clock(duration(active, now)) : "00:00"}
                       </strong>
                       <span>
-                        <Route size={13} />
-                        Tempo attivo
+                        <Route size={13} /> {tr("Tempo attivo")}{" "}
                       </span>
                     </div>
                   </div>
@@ -946,11 +1017,10 @@ export default function App() {
                         }
                       >
                         {recording ? <Pause size={17} /> : <Play size={17} />}{" "}
-                        {recording ? "Pausa" : "Riprendi"}
+                        {recording ? tr("Pausa") : tr("Riprendi")}
                       </button>
                       <button className="button secondary" onClick={stop}>
-                        <Square size={15} />
-                        Concludi
+                        <Square size={15} /> {tr("Concludi")}{" "}
                       </button>
                     </div>
                   ) : (
@@ -960,16 +1030,22 @@ export default function App() {
                       onClick={start}
                     >
                       <Play size={18} />
-                      {busy ? "Cerchiamo il GPS…" : "Avvia uscita"}
+                      {busy ? tr("Cerchiamo il GPS…") : tr("Avvia uscita")}
                       <ArrowRight size={17} />
                     </button>
                   )}
                   <div className="record-hint">
                     {recording && !fresh
-                      ? "Segnale GPS assente o impreciso: in attesa di una posizione valida."
+                      ? tr(
+                          "Segnale GPS assente o impreciso: in attesa di una posizione valida.",
+                        )
                       : active?.points.length === 100000
-                        ? "Limite traccia raggiunto. Concludi l’uscita e avviane una nuova."
-                        : "Tieni l’app visibile. In background l’uscita va in pausa."}
+                        ? tr(
+                            "Limite traccia raggiunto. Concludi l’uscita e avviane una nuova.",
+                          )
+                        : tr(
+                            "Tieni l’app visibile. In background l’uscita va in pausa.",
+                          )}
                   </div>
                 </div>
               )}
@@ -979,8 +1055,8 @@ export default function App() {
                     <Plus size={23} />
                   </span>
                   <span>
-                    <strong>Segna un punto</strong>
-                    <small>Un ritrovamento, un posto speciale</small>
+                    <strong>{tr("Segna un punto")}</strong>
+                    <small>{tr("Un ritrovamento, un posto speciale")}</small>
                   </span>
                   <ChevronRight size={18} />
                 </button>
@@ -989,9 +1065,11 @@ export default function App() {
                   onClick={() =>
                     data.car
                       ? setConfirm({
-                          title: "Aggiorna la posizione auto?",
-                          text: "Il punto auto attuale sarà sostituito. Le uscite concluse conserveranno il loro punto originale.",
-                          label: "Scegli nuova posizione",
+                          title: tr("Aggiorna la posizione auto?"),
+                          text: tr(
+                            "Il punto auto attuale sarà sostituito. Le uscite concluse conserveranno il loro punto originale.",
+                          ),
+                          label: tr("Scegli nuova posizione"),
                           action: () => setChoose("car"),
                         })
                       : setChoose("car")
@@ -1002,12 +1080,14 @@ export default function App() {
                   </span>
                   <span>
                     <strong>
-                      {data.car ? "Auto salvata" : "Salva l’auto"}
+                      {data.car ? tr("Auto salvata") : tr("Salva l’auto")}
                     </strong>
                     <small>
                       {data.car
-                        ? `Posizione del ${dateLabel(data.car.savedAt)}`
-                        : "Il tuo punto di partenza"}
+                        ? tr("Posizione del {{date}}", {
+                            date: dateLabel(data.car.savedAt),
+                          })
+                        : tr("Il tuo punto di partenza")}
                     </small>
                   </span>
                   <ChevronRight size={18} />
@@ -1017,8 +1097,8 @@ export default function App() {
                     <Navigation size={21} />
                   </span>
                   <span>
-                    <strong>Torna all’auto</strong>
-                    <small>Ritrova il percorso registrato</small>
+                    <strong>{tr("Torna all’auto")}</strong>
+                    <small>{tr("Ritrova il percorso registrato")}</small>
                   </span>
                   <ChevronRight size={18} />
                 </button>
@@ -1026,10 +1106,12 @@ export default function App() {
               {viewedTrip && viewedTrip.id !== active?.id && (
                 <div className="selected-trip">
                   <Route size={17} />
-                  <span>Stai vedendo: {viewedTrip.name}</span>
+                  <span>
+                    {tr("Stai vedendo:")} {viewedTrip.name}
+                  </span>
                   <button
                     className="icon-button"
-                    aria-label="Nascondi percorso"
+                    aria-label={tr("Nascondi percorso")}
                     onClick={() => {
                       setSelectedTrip(null);
                       setReturning(false);
@@ -1041,29 +1123,30 @@ export default function App() {
               )}
               {gps.error && (
                 <div className="inline-error" role="alert">
-                  {gps.error}
+                  {tr(gps.error)}
                 </div>
               )}
               <div className="forest-note">
                 <Leaf size={18} />
                 <span>
-                  I posti migliori sono quelli
-                  <br />
-                  che impari a riconoscere.
+                  {" "}
+                  {tr("I posti migliori sono quelli")} <br />{" "}
+                  {tr("che impari a riconoscere.")}{" "}
                 </span>
               </div>
             </aside>
             <section className="recent-section">
               <div className="section-heading">
                 <h2>
-                  I tuoi ultimi punti <span>{data.finds.length}</span>
+                  {" "}
+                  {tr("I tuoi ultimi punti")} <span>{data.finds.length}</span>
                 </h2>
                 <button
                   className="text-button"
                   onClick={() => setPage("finds")}
                 >
-                  Il taccuino
-                  <ArrowRight size={15} />
+                  {" "}
+                  {tr("Il taccuino")} <ArrowRight size={15} />
                 </button>
               </div>
               {data.finds.length ? (
@@ -1090,7 +1173,9 @@ export default function App() {
                         <strong>{f.title}</strong>
                         <small>
                           {dateLabel(f.createdAt)} ·{" "}
-                          {f.kind === "spot" ? "Fungaia" : "Ritrovamento"}
+                          {f.kind === "spot"
+                            ? tr("Fungaia")
+                            : tr("Ritrovamento")}
                         </small>
                       </span>
                       <ChevronRight size={16} />
@@ -1103,17 +1188,20 @@ export default function App() {
                     <MapPin size={25} />
                   </span>
                   <div>
-                    <strong>Il tuo primo punto ti aspetta.</strong>
+                    <strong>{tr("Il tuo primo punto ti aspetta.")}</strong>
                     <p>
-                      Salva un ritrovamento o una fungaia: li ritroverai qui.
+                      {" "}
+                      {tr(
+                        "Salva un ritrovamento o una fungaia: li ritroverai qui.",
+                      )}{" "}
                     </p>
                   </div>
                   <button
                     className="text-button"
                     onClick={() => setChoose("find")}
                   >
-                    Aggiungi un punto
-                    <Plus size={16} />
+                    {" "}
+                    {tr("Aggiungi un punto")} <Plus size={16} />
                   </button>
                 </div>
               )}
@@ -1122,7 +1210,7 @@ export default function App() {
           {page === "finds" && (
             <section>
               <div className="list-toolbar">
-                <div className="filters" aria-label="Filtra punti">
+                <div className="filters" aria-label={tr("Filtra punti")}>
                   {(["all", "find", "spot"] as const).map((f) => (
                     <button
                       key={f}
@@ -1130,18 +1218,18 @@ export default function App() {
                       onClick={() => setFilter(f)}
                     >
                       {f === "all"
-                        ? "Tutti"
+                        ? tr("Tutti")
                         : f === "find"
-                          ? "Ritrovamenti"
-                          : "Fungaie"}
+                          ? tr("Ritrovamenti")
+                          : tr("Fungaie")}
                     </button>
                   ))}
                 </div>
                 <label className="search-input">
                   <Search size={18} />
                   <input
-                    aria-label="Cerca nei punti"
-                    placeholder="Cerca nel taccuino…"
+                    aria-label={tr("Cerca nei punti")}
+                    placeholder={tr("Cerca nel taccuino…")}
                     value={query}
                     onChange={(e) => setQuery(e.target.value)}
                   />
@@ -1160,13 +1248,15 @@ export default function App() {
                           )}
                         </span>
                         <span className="find-kind">
-                          {f.kind === "spot" ? "Fungaia" : "Ritrovamento"}
+                          {f.kind === "spot"
+                            ? tr("Fungaia")
+                            : tr("Ritrovamento")}
                         </span>
                       </div>
                       <div className="find-card-content">
                         <small>{dateLabel(f.createdAt)}</small>
                         <h2>{f.title}</h2>
-                        <p>{f.notes || "Un luogo da ricordare."}</p>
+                        <p>{f.notes || tr("Un luogo da ricordare.")}</p>
                         <button
                           className="text-button"
                           onClick={() => {
@@ -1174,8 +1264,8 @@ export default function App() {
                             setDetail(f);
                           }}
                         >
-                          Apri sulla mappa
-                          <ArrowRight size={16} />
+                          {" "}
+                          {tr("Apri sulla mappa")} <ArrowRight size={16} />
                         </button>
                       </div>
                     </article>
@@ -1186,13 +1276,15 @@ export default function App() {
                   icon={<Bookmark size={34} />}
                   title={
                     data.finds.length
-                      ? "Nessun punto trovato."
-                      : "Il taccuino è tutto da scrivere."
+                      ? tr("Nessun punto trovato.")
+                      : tr("Il taccuino è tutto da scrivere.")
                   }
                   text={
                     data.finds.length
-                      ? "Prova un altro nome o cambia filtro."
-                      : "Aggiungi un punto usando il GPS o scegliendolo sulla mappa."
+                      ? tr("Prova un altro nome o cambia filtro.")
+                      : tr(
+                          "Aggiungi un punto usando il GPS o scegliendolo sulla mappa.",
+                        )
                   }
                 />
               )}
@@ -1209,20 +1301,23 @@ export default function App() {
                     <div className="trip-row-name">
                       <span className="mini-label">
                         {t.status === "completed"
-                          ? "CONCLUSA"
+                          ? tr("CONCLUSA")
                           : t.status === "active"
-                            ? "IN CORSO"
-                            : "IN PAUSA"}
+                            ? tr("IN CORSO")
+                            : tr("IN PAUSA")}
                       </span>
                       <h2>{t.name}</h2>
                       <p>
-                        {dateLabel(t.startedAt)} · {t.points.length} posizioni ·{" "}
-                        {segments(t.points).length} tratti
+                        {dateLabel(t.startedAt)} · {t.points.length}{" "}
+                        {tr("posizioni ·")} {segments(t.points).length}{" "}
+                        {tr("tratti")}{" "}
                       </p>
                     </div>
                     <div className="trip-row-stat">
                       <strong>{metres(trackDistance(t))}</strong>
-                      <small>{clock(duration(t, now))} ore</small>
+                      <small>
+                        {clock(duration(t, now))} {tr("ore")}
+                      </small>
                     </div>
                     <div className="trip-row-actions">
                       <button
@@ -1233,12 +1328,13 @@ export default function App() {
                           fit(t);
                         }}
                       >
-                        <Map size={17} />
-                        Vedi
+                        <Map size={17} /> {tr("Vedi")}{" "}
                       </button>
                       <button
                         className="icon-button"
-                        aria-label={`Esporta GPX ${t.name}`}
+                        aria-label={tr("Esporta GPX {{name}}", {
+                          name: t.name,
+                        })}
                         onClick={() =>
                           download(
                             toGpx(t),
@@ -1252,12 +1348,14 @@ export default function App() {
                       {t.status === "completed" && (
                         <button
                           className="icon-button"
-                          aria-label={`Elimina ${t.name}`}
+                          aria-label={tr("Elimina {{name}}", { name: t.name })}
                           onClick={() =>
                             setConfirm({
-                              title: "Elimina questa uscita?",
-                              text: "Il percorso sarà rimosso da questo dispositivo. I ritrovamenti rimarranno nel taccuino.",
-                              label: "Elimina uscita",
+                              title: tr("Elimina questa uscita?"),
+                              text: tr(
+                                "Il percorso sarà rimosso da questo dispositivo. I ritrovamenti rimarranno nel taccuino.",
+                              ),
+                              label: tr("Elimina uscita"),
                               danger: true,
                               action: () => {
                                 update((old) => ({
@@ -1279,114 +1377,131 @@ export default function App() {
               ) : (
                 <Empty
                   icon={<Route size={36} />}
-                  title="Il primo sentiero è ancora da percorrere."
-                  text="Tocca Avvia uscita nella mappa per registrare il tuo percorso."
+                  title={tr("Il primo sentiero è ancora da percorrere.")}
+                  text={tr(
+                    "Tocca Avvia uscita nella mappa per registrare il tuo percorso.",
+                  )}
                 />
               )}
             </section>
           )}
           {page === "settings" && (
             <section className="settings-grid">
-              <GpsSettings
-                permission={gps.permission}
-                pending={gps.pending}
-                error={gps.error}
-                onLocate={locateForInfo}
-              />
-              <article className="settings-card">
-                <span className="action-icon green">
-                  <ShieldCheck size={23} />
-                </span>
-                <h2>I tuoi posti restano tuoi.</h2>
-                <p>
-                  Punti e percorsi sono salvati solo in questo browser, su
-                  questo dispositivo. Non hai ancora un account e non vengono
-                  sincronizzati.
-                </p>
-                <p>
-                  Se cancelli i dati del sito o cambi dispositivo, puoi
-                  perderli. Esporta periodicamente un backup.
-                </p>
-                <button className="button primary" onClick={backup}>
-                  <ArrowDownToLine size={17} />
-                  Esporta backup
-                </button>
-                <button
-                  className="button secondary"
-                  disabled={!!active}
-                  onClick={() => importRef.current?.click()}
-                >
-                  <ArrowUpFromLine size={17} />
-                  Importa backup
-                </button>
-                {active && (
-                  <small>Concludi l’uscita prima di importare un backup.</small>
-                )}
-                <input
-                  ref={importRef}
-                  type="file"
-                  accept=".json,application/json"
-                  hidden
-                  onChange={(e) => {
-                    void importBackup(e.target.files?.[0]);
-                    e.target.value = "";
-                  }}
+              <PreferencesSettings onProfile={() => setEditProfile(true)}>
+                <GpsSettings
+                  permission={gps.permission}
+                  pending={gps.pending}
+                  error={gps.error}
+                  onLocate={locateForInfo}
                 />
-              </article>
-              <article className="settings-card">
-                <span className="action-icon orange">
-                  <Navigation size={23} />
-                </span>
-                <h2>MycoTrail sul tuo telefono.</h2>
-                <ol>
-                  <li>Apri MycoTrail nel tuo browser su iPhone o Android.</li>
-                  <li>
-                    Su iPhone cerca{" "}
-                    <strong>Condividi → Aggiungi alla schermata Home</strong>.
-                  </li>
-                  <li>
-                    Su Android apri il menu del browser e cerca{" "}
-                    <strong>Installa app</strong> o{" "}
-                    <strong>Aggiungi a schermata Home</strong>.
-                  </li>
-                  <li>Apri MycoTrail e consenti la posizione.</li>
-                </ol>
-                <p>
-                  Durante la registrazione tieni l’app in primo piano. Proviamo
-                  a mantenere lo schermo acceso quando il browser lo consente.
-                  Il tracking affidabile a schermo spento richiederà la futura
-                  versione nativa, anche se installi questa web app sulla Home.
-                </p>
-                <button className="text-button" onClick={() => setHelp(true)}>
-                  Leggi la guida
-                  <ArrowRight size={16} />
-                </button>
-              </article>
-              <article className="settings-card wide">
-                <span className="mini-label">MYCOTRAIL · V2 WEB</span>
-                <h2>Pronta per orientarti.</h2>
-                <p>
-                  Mappe selezionabili, bussola, schermo intero e SOS affiancano
-                  il taccuino e le uscite. Mappe scaricabili, pendenze numeriche
-                  e filtro versanti non sono ancora disponibili.
-                </p>
-                <p>
-                  La cartografia viene caricata da OpenTopoMap, OpenStreetMap o,
-                  se configurato, MapTiler: il fornitore riceve le normali
-                  richieste web per l’area visualizzata. L’app non invia a un
-                  nostro server le tue fungaie o le tue tracce.
-                </p>
-              </article>
+                <article className="settings-card">
+                  <span className="action-icon green">
+                    <ShieldCheck size={23} />
+                  </span>
+                  <h2>{tr("Dati e backup")}</h2>
+                  <p>
+                    {" "}
+                    {tr(
+                      "Punti e percorsi sono salvati solo in questo browser, su questo dispositivo. Non hai ancora un account e non vengono sincronizzati.",
+                    )}{" "}
+                  </p>
+                  <p>
+                    {" "}
+                    {tr(
+                      "Se cancelli i dati del sito o cambi dispositivo, puoi perderli. Esporta periodicamente un backup.",
+                    )}{" "}
+                  </p>
+                  <button className="button primary" onClick={backup}>
+                    <ArrowDownToLine size={17} /> {tr("Esporta backup")}{" "}
+                  </button>
+                  <button
+                    className="button secondary"
+                    disabled={!!active}
+                    onClick={() => importRef.current?.click()}
+                  >
+                    <ArrowUpFromLine size={17} /> {tr("Importa backup")}{" "}
+                  </button>
+                  {active && (
+                    <small>
+                      {tr("Concludi l’uscita prima di importare un backup.")}
+                    </small>
+                  )}
+                  <input
+                    ref={importRef}
+                    type="file"
+                    accept=".json,application/json"
+                    hidden
+                    onChange={(e) => {
+                      void importBackup(e.target.files?.[0]);
+                      e.target.value = "";
+                    }}
+                  />
+                </article>
+                <article className="settings-card">
+                  <span className="action-icon orange">
+                    <Navigation size={23} />
+                  </span>
+                  <h2>{tr("MycoTrail sul tuo telefono.")}</h2>
+                  <ol>
+                    <li>
+                      {tr(
+                        "Apri MycoTrail nel tuo browser su iPhone o Android.",
+                      )}
+                    </li>
+                    <li>
+                      {" "}
+                      {tr("Su iPhone cerca")}{" "}
+                      <strong>
+                        {tr("Condividi → Aggiungi alla schermata Home")}
+                      </strong>
+                      .
+                    </li>
+                    <li>
+                      {" "}
+                      {tr("Su Android apri il menu del browser e cerca")}{" "}
+                      <strong>{tr("Installa app")}</strong> {tr("o")}{" "}
+                      <strong>{tr("Aggiungi a schermata Home")}</strong>.
+                    </li>
+                    <li>{tr("Apri MycoTrail e consenti la posizione.")}</li>
+                  </ol>
+                  <p>
+                    {" "}
+                    {tr(
+                      "Durante la registrazione tieni l’app in primo piano. Proviamo a mantenere lo schermo acceso quando il browser lo consente. Il tracking affidabile a schermo spento richiederà la futura versione nativa, anche se installi questa web app sulla Home.",
+                    )}{" "}
+                  </p>
+                  <button className="text-button" onClick={() => setHelp(true)}>
+                    {" "}
+                    {tr("Leggi la guida")} <ArrowRight size={16} />
+                  </button>
+                </article>
+                <article className="settings-card wide">
+                  <span className="mini-label">MycoTrail · 0.3.0 · Web</span>
+                  <h2>{tr("Info e privacy")}</h2>
+                  <p>
+                    {" "}
+                    {tr(
+                      "Mappe selezionabili, bussola, schermo intero e SOS affiancano il taccuino e le uscite. Mappe scaricabili, pendenze numeriche e filtro versanti non sono ancora disponibili.",
+                    )}{" "}
+                  </p>
+                  <p>
+                    {" "}
+                    {tr(
+                      "La cartografia viene caricata da OpenTopoMap, OpenStreetMap o, se configurato, MapTiler: il fornitore riceve le normali richieste web per l’area visualizzata. L’app non invia a un nostro server le tue fungaie o le tue tracce.",
+                    )}{" "}
+                  </p>
+                </article>
+              </PreferencesSettings>
             </section>
           )}
           <footer className="page-footer">
             <Brand compact />
-            <span>Prenditi cura dei tuoi luoghi.</span>
-            <span>MycoTrail · Fatto per esplorare</span>
+            <span>{tr("Prenditi cura dei tuoi luoghi.")}</span>
+            <span>{tr("MycoTrail · Fatto per esplorare")}</span>
           </footer>
         </main>
       </div>
-      <nav className="mobile-nav" aria-label="Navigazione mobile">
+      <nav className="mobile-nav" aria-label={tr("Navigazione mobile")}>
         {tabs.map(({ key, title, Icon }) => (
           <button
             key={key}
@@ -1397,31 +1512,47 @@ export default function App() {
             }}
           >
             <Icon size={21} />
-            <span>{title}</span>
+            <span>{tr(title)}</span>
           </button>
         ))}
       </nav>
       {notice && (
         <div className="toast" role="status">
-          <span>{notice}</span>
+          <span>{tr(notice)}</span>
           <button
             className="icon-button"
-            aria-label="Chiudi avviso"
+            aria-label={tr("Chiudi avviso")}
             onClick={() => setNotice("")}
           >
             <X size={17} />
           </button>
         </div>
       )}
+      {editProfile && (
+        <Modal
+          title={tr("Riconfigura profilo")}
+          onClose={() => setEditProfile(false)}
+        >
+          <Onboarding
+            onDone={() => setEditProfile(false)}
+            onCancel={() => setEditProfile(false)}
+          />
+        </Modal>
+      )}
       {choose && (
         <Modal
           title={
-            choose === "car" ? "Dov’è la tua auto?" : "Un nuovo punto nel bosco"
+            choose === "car"
+              ? tr("Dov’è la tua auto?")
+              : tr("Un nuovo punto nel bosco")
           }
           onClose={() => setChoose(null)}
         >
           <p className="modal-description">
-            Usa la posizione attuale oppure scegli un punto preciso sulla mappa.
+            {" "}
+            {tr(
+              "Usa la posizione attuale oppure scegli un punto preciso sulla mappa.",
+            )}{" "}
           </p>
           <div className="location-choices">
             <button
@@ -1430,8 +1561,8 @@ export default function App() {
             >
               <Crosshair size={25} />
               <span>
-                <strong>La mia posizione</strong>
-                <small>Con il GPS del dispositivo</small>
+                <strong>{tr("La mia posizione")}</strong>
+                <small>{tr("Con il GPS del dispositivo")}</small>
               </span>
               <ChevronRight size={20} />
             </button>
@@ -1441,8 +1572,8 @@ export default function App() {
             >
               <MapPin size={25} />
               <span>
-                <strong>Scegli sulla mappa</strong>
-                <small>Per segnare anche un posto lontano</small>
+                <strong>{tr("Scegli sulla mappa")}</strong>
+                <small>{tr("Per segnare anche un posto lontano")}</small>
               </span>
               <ChevronRight size={20} />
             </button>
@@ -1473,7 +1604,9 @@ export default function App() {
           onSave={(find) => {
             if (!draft.find && data.finds.length >= 10000) {
               setNotice(
-                "Limite di 10.000 punti raggiunto. Esporta un backup e libera il taccuino.",
+                tr(
+                  "Limite di 10.000 punti raggiunto. Esporta un backup e libera il taccuino.",
+                ),
               );
               return;
             }
@@ -1485,18 +1618,18 @@ export default function App() {
             }));
             setDraft(null);
             center(find);
-            setNotice("Punto salvato nel tuo taccuino.");
+            setNotice(tr("Punto salvato nel tuo taccuino."));
           }}
         />
       )}
       {detail && (
         <Modal title={detail.title} onClose={() => setDetail(null)}>
           <span className="detail-badge">
-            {detail.kind === "spot" ? "Fungaia" : "Ritrovamento"} ·{" "}
+            {detail.kind === "spot" ? tr("Fungaia") : tr("Ritrovamento")} ·{" "}
             {dateLabel(detail.createdAt)}
           </span>
           <p className="detail-notes">
-            {detail.notes || "Nessuna nota aggiunta."}
+            {detail.notes || tr("Nessuna nota aggiunta.")}
           </p>
           <div className="coordinate-box">
             <MapPin size={18} />
@@ -1504,8 +1637,10 @@ export default function App() {
               {detail.lat.toFixed(6)}, {detail.lng.toFixed(6)}
               <small>
                 {detail.source === "gps"
-                  ? `Salvato con GPS · ±${Math.round(detail.accuracy ?? 0)} m`
-                  : "Scelto sulla mappa"}
+                  ? tr("Salvato con GPS · ±{{accuracy}}", {
+                      accuracy: metres(detail.accuracy ?? 0),
+                    })
+                  : tr("Scelto sulla mappa")}
               </small>
             </span>
           </div>
@@ -1522,7 +1657,8 @@ export default function App() {
                 setDetail(null);
               }}
             >
-              Modifica punto
+              {" "}
+              {tr("Modifica punto")}{" "}
             </button>
             <button
               className="button danger-outline"
@@ -1530,9 +1666,11 @@ export default function App() {
                 const id = detail.id;
                 setDetail(null);
                 setConfirm({
-                  title: "Elimina questo punto?",
-                  text: "Il ritrovamento sarà rimosso dal taccuino su questo dispositivo.",
-                  label: "Elimina punto",
+                  title: tr("Elimina questo punto?"),
+                  text: tr(
+                    "Il ritrovamento sarà rimosso dal taccuino su questo dispositivo.",
+                  ),
+                  label: tr("Elimina punto"),
                   danger: true,
                   action: () =>
                     update((old) => ({
@@ -1542,8 +1680,7 @@ export default function App() {
                 });
               }}
             >
-              <Trash2 size={17} />
-              Elimina
+              <Trash2 size={17} /> {tr("Elimina")}{" "}
             </button>
           </div>
         </Modal>
@@ -1556,7 +1693,8 @@ export default function App() {
               className="button secondary"
               onClick={() => setConfirm(null)}
             >
-              Annulla
+              {" "}
+              {tr("Annulla")}{" "}
             </button>
             <button
               className={`button ${confirm.danger ? "danger" : "primary"}`}
@@ -1573,49 +1711,54 @@ export default function App() {
       )}
       {help && (
         <Modal
-          title="Prima di entrare nel bosco"
+          title={tr("Prima di entrare nel bosco")}
           onClose={() => setHelp(false)}
         >
           <div className="guide-item">
             <CarFront />
             <div>
-              <h3>Segna il punto di partenza</h3>
+              <h3>{tr("Segna il punto di partenza")}</h3>
               <p>
-                Salva l’auto prima di avviare l’uscita. Ogni uscita mantiene il
-                proprio punto auto.
+                {" "}
+                {tr(
+                  "Salva l’auto prima di avviare l’uscita. Ogni uscita mantiene il proprio punto auto.",
+                )}{" "}
               </p>
             </div>
           </div>
           <div className="guide-item">
             <Footprints />
             <div>
-              <h3>Tieni MycoTrail aperta</h3>
+              <h3>{tr("Tieni MycoTrail aperta")}</h3>
               <p>
-                Se cambi app o blocchi lo schermo, la registrazione viene messa
-                in pausa. Al ritorno tocca Riprendi. Le interruzioni non vengono
-                collegate con linee inventate.
+                {" "}
+                {tr(
+                  "Se cambi app o blocchi lo schermo, la registrazione viene messa in pausa. Al ritorno tocca Riprendi. Le interruzioni non vengono collegate con linee inventate.",
+                )}{" "}
               </p>
             </div>
           </div>
           <div className="guide-item">
             <Map />
             <div>
-              <h3>La mappa richiede connessione</h3>
+              <h3>{tr("La mappa richiede connessione")}</h3>
               <p>
-                Dopo il primo caricamento completo, l’interfaccia può riaprirsi
-                offline. Punti e tracce sono locali, ma la cartografia non viene
-                scaricata per l’uso offline.
+                {" "}
+                {tr(
+                  "Dopo il primo caricamento completo, l’interfaccia può riaprirsi offline. Punti e tracce sono locali, ma la cartografia non viene scaricata per l’uso offline.",
+                )}{" "}
               </p>
             </div>
           </div>
           <div className="guide-item">
             <Flag />
             <div>
-              <h3>Ritorna lungo i tuoi passi</h3>
+              <h3>{tr("Ritorna lungo i tuoi passi")}</h3>
               <p>
-                Il ritorno mostra la traccia registrata e il punto auto. La
-                distanza è in linea d’aria, non un itinerario da seguire. Questa
-                prima versione va provata su percorsi conosciuti.
+                {" "}
+                {tr(
+                  "Il ritorno mostra la traccia registrata e il punto auto. La distanza è in linea d’aria, non un itinerario da seguire. Questa prima versione va provata su percorsi conosciuti.",
+                )}{" "}
               </p>
             </div>
           </div>
@@ -1623,8 +1766,7 @@ export default function App() {
             className="button primary full"
             onClick={() => setHelp(false)}
           >
-            <Check size={18} />
-            Ho capito, esploriamo
+            <Check size={18} /> {tr("Ho capito, esploriamo")}{" "}
           </button>
         </Modal>
       )}
@@ -1657,6 +1799,7 @@ function FindForm({
   onClose: () => void;
   onSave: (find: Find) => void;
 }) {
+  const { tr } = usePreferences();
   const [kind, setKind] = useState<"find" | "spot">(draft.find?.kind ?? "find");
   const [title, setTitle] = useState(draft.find?.title ?? "");
   const [notes, setNotes] = useState(draft.find?.notes ?? "");
@@ -1677,7 +1820,9 @@ function FindForm({
   }
   return (
     <Modal
-      title={draft.find ? "Modifica il tuo punto" : "Un posto da ricordare"}
+      title={
+        draft.find ? tr("Modifica il tuo punto") : tr("Un posto da ricordare")
+      }
       onClose={onClose}
     >
       <form onSubmit={submit}>
@@ -1687,39 +1832,39 @@ function FindForm({
             className={kind === "find" ? "selected" : ""}
             onClick={() => setKind("find")}
           >
-            <MapPin size={18} />
-            Ritrovamento
+            <MapPin size={18} /> {tr("Ritrovamento")}{" "}
           </button>
           <button
             type="button"
             className={kind === "spot" ? "selected" : ""}
             onClick={() => setKind("spot")}
           >
-            <Star size={18} />
-            Fungaia
+            <Star size={18} /> {tr("Fungaia")}{" "}
           </button>
         </div>
         <label className="field">
-          Nome del punto
+          {" "}
+          {tr("Nome del punto")}{" "}
           <input
             autoFocus
             required
             maxLength={80}
             placeholder={
               kind === "find"
-                ? "Es. Porcini sotto il castagno"
-                : "Es. La fungaia del sentiero alto"
+                ? tr("Es. Porcini sotto il castagno")
+                : tr("Es. La fungaia del sentiero alto")
             }
             value={title}
             onChange={(e) => setTitle(e.target.value)}
           />
         </label>
         <label className="field">
-          Le tue note <span>(facoltative)</span>
+          {" "}
+          {tr("Le tue note")} <span>{tr("(facoltative)")}</span>
           <textarea
             maxLength={1000}
             rows={4}
-            placeholder="Alberi vicini, terreno, dettagli da ricordare…"
+            placeholder={tr("Alberi vicini, terreno, dettagli da ricordare…")}
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
           />
@@ -1728,7 +1873,7 @@ function FindForm({
           <MapPin size={17} />
           {draft.coordinate.lat.toFixed(5)}, {draft.coordinate.lng.toFixed(5)}
           <span className="coordinate-source">
-            {draft.source === "gps" ? "GPS" : "Mappa"}
+            {draft.source === "gps" ? "GPS" : tr("Mappa")}
           </span>
         </div>
         <button
@@ -1736,8 +1881,7 @@ function FindForm({
           type="submit"
           disabled={!title.trim()}
         >
-          <Check size={18} />
-          Salva punto
+          <Check size={18} /> {tr("Salva punto")}{" "}
         </button>
       </form>
     </Modal>

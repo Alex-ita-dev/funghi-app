@@ -1,4 +1,6 @@
+import { usePreferences } from "../hooks/usePreferences";
 export function Brand({ compact = false }: { compact?: boolean }) {
+  const { tr } = usePreferences();
   return (
     <div className="brand">
       <svg
@@ -21,7 +23,7 @@ export function Brand({ compact = false }: { compact?: boolean }) {
       {!compact && (
         <span>
           Myco<span className="brand-light">Trail</span>
-          <small>IL BOSCO, A MODO TUO.</small>
+          <small>{tr("IL BOSCO, A MODO TUO.")}</small>
         </span>
       )}
     </div>

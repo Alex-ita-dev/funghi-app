@@ -1,3 +1,4 @@
+import { usePreferences } from "../hooks/usePreferences";
 import { useState } from "react";
 import { Copy, Crosshair, Phone, Share2 } from "lucide-react";
 import { Modal } from "./Modal";
@@ -17,15 +18,20 @@ export function SosPanel({
   onLocate: () => void;
   onClose: () => void;
 }) {
+  const { tr, settings, metres, altitude, dateTime } = usePreferences();
   const [status, setStatus] = useState("");
   async function copy() {
     if (!fix) return;
     try {
-      await navigator.clipboard.writeText(coordinateText(fix));
-      setStatus("Coordinate copiate.");
+      await navigator.clipboard.writeText(
+        coordinateText(fix, now, settings.preferences),
+      );
+      setStatus(tr("Coordinate copiate."));
     } catch {
       setStatus(
-        "Copia automatica non disponibile. Tieni premuto il testo delle coordinate per copiarlo.",
+        tr(
+          "Copia automatica non disponibile. Tieni premuto il testo delle coordinate per copiarlo.",
+        ),
       );
     }
   }
@@ -37,27 +43,29 @@ export function SosPanel({
         return;
       }
       await navigator.share({
-        title: "Posizione MycoTrail",
-        text: coordinateText(fix),
+        title: tr("Posizione MycoTrail"),
+        text: coordinateText(fix, now, settings.preferences),
       });
       setStatus(
-        "Posizione consegnata al sistema di condivisione; verifica l’invio nell’app scelta.",
+        tr(
+          "Posizione consegnata al sistema di condivisione; verifica l’invio nell’app scelta.",
+        ),
       );
     } catch (e) {
       if ((e as Error).name !== "AbortError")
-        setStatus("Condivisione non riuscita. Puoi copiare le coordinate.");
+        setStatus(tr("Condivisione non riuscita. Puoi copiare le coordinate."));
     }
   }
   return (
-    <Modal title="SOS · La tua posizione" onClose={onClose}>
+    <Modal title={tr("SOS · La tua posizione")} onClose={onClose}>
       <a className="button danger full emergency-call" href="tel:112">
-        <Phone size={20} />
-        Chiama 112
+        <Phone size={20} /> {tr("Chiama 112")}{" "}
       </a>
       <p className="modal-description">
-        Apre il telefono: MycoTrail non invia automaticamente richieste di
-        soccorso. Comunica le coordinate all’operatore. La chiamata dipende
-        dalla copertura telefonica.
+        {" "}
+        {tr(
+          "Apre il telefono: MycoTrail non invia automaticamente richieste di soccorso. Comunica le coordinate all’operatore. La chiamata dipende dalla copertura telefonica.",
+        )}{" "}
       </p>
       {fix ? (
         <>
@@ -65,44 +73,44 @@ export function SosPanel({
             className={`sos-fix-status ${!isRecent(fix, now) || fix.accuracy > 50 ? "warning" : ""}`}
           >
             {!isRecent(fix, now)
-              ? "Posizione precedente: potrebbe non essere dove sei ora."
+              ? tr("Posizione precedente: potrebbe non essere dove sei ora.")
               : fix.accuracy > 50
-                ? "Posizione recente ma imprecisa."
-                : "Posizione GPS recente"}
+                ? tr("Posizione recente ma imprecisa.")
+                : tr("Posizione GPS recente")}
           </p>
           <dl className="sos-coordinates">
-            <dt>Latitudine</dt>
+            <dt>{tr("Latitudine")}</dt>
             <dd>{fix.lat.toFixed(6)}</dd>
-            <dt>Longitudine</dt>
+            <dt>{tr("Longitudine")}</dt>
             <dd>{fix.lng.toFixed(6)}</dd>
-            <dt>Precisione</dt>
-            <dd>±{Math.round(fix.accuracy)} m</dd>
-            <dt>Quota GPS</dt>
+            <dt>{tr("Precisione")}</dt>
+            <dd>±{metres(fix.accuracy)}</dd>
+            <dt>{tr("Quota GPS")}</dt>
             <dd>
               {fix.altitude === null
-                ? "Non disponibile"
-                : `${Math.round(fix.altitude)} m`}
+                ? tr("Non disponibile")
+                : altitude(fix.altitude)}
               {fix.altitudeAccuracy !== null &&
-                ` (±${Math.round(fix.altitudeAccuracy)} m)`}
+                ` (±${altitude(fix.altitudeAccuracy)})`}
             </dd>
-            <dt>Rilevata alle</dt>
-            <dd>{new Date(fix.timestamp).toLocaleString("it-IT")}</dd>
+            <dt>{tr("Rilevata alle")}</dt>
+            <dd>{dateTime(fix.timestamp)}</dd>
           </dl>
           <div className="modal-actions">
             <button className="button secondary" onClick={() => void copy()}>
-              <Copy size={18} />
-              Copia coordinate
+              <Copy size={18} /> {tr("Copia coordinate")}{" "}
             </button>
             <button className="button secondary" onClick={() => void share()}>
-              <Share2 size={18} />
-              Condividi coordinate
+              <Share2 size={18} /> {tr("Condividi coordinate")}{" "}
             </button>
           </div>
         </>
       ) : (
         <p className="info-note">
-          Nessuna posizione rilevata. Puoi chiamare il 112 anche senza attendere
-          il GPS.
+          {" "}
+          {tr(
+            "Nessuna posizione rilevata. Puoi chiamare il 112 anche senza attendere il GPS.",
+          )}{" "}
         </p>
       )}
       <button
@@ -111,11 +119,11 @@ export function SosPanel({
         onClick={onLocate}
       >
         <Crosshair size={18} />
-        {pending ? "Ricerca posizione…" : "Aggiorna posizione GPS"}
+        {pending ? tr("Ricerca posizione…") : tr("Aggiorna posizione GPS")}
       </button>
       {error && (
         <p role="alert" className="inline-error">
-          {error}
+          {tr(error)}
         </p>
       )}
       {status && (
@@ -124,9 +132,10 @@ export function SosPanel({
         </p>
       )}
       <p className="modal-description">
-        Coordinate disponibili anche senza internet se il GPS riesce a
-        rilevarle. Condivisione e consegna del messaggio dipendono dall’app
-        scelta e dalla rete.
+        {" "}
+        {tr(
+          "Coordinate disponibili anche senza internet se il GPS riesce a rilevarle. Condivisione e consegna del messaggio dipendono dall’app scelta e dalla rete.",
+        )}{" "}
       </p>
     </Modal>
   );

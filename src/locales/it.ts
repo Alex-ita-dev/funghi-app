@@ -1,0 +1,471 @@
+export default {
+  Esplora: "Esplora",
+  "I miei punti": "I miei punti",
+  "Le mie uscite": "Le mie uscite",
+  Impostazioni: "Impostazioni",
+  "Uscita messa in pausa: MycoTrail era in background. Tocca Riprendi per continuare.":
+    "Uscita messa in pausa: MycoTrail era in background. Tocca Riprendi per continuare.",
+  "Limite di 500 uscite raggiunto. Esporta un backup e rimuovi alcune uscite.":
+    "Limite di 500 uscite raggiunto. Esporta un backup e rimuovi alcune uscite.",
+  "Registrazione avviata. Tieni MycoTrail visibile durante l’uscita.":
+    "Registrazione avviata. Tieni MycoTrail visibile durante l’uscita.",
+  "Registrazione ripresa in un nuovo tratto.":
+    "Registrazione ripresa in un nuovo tratto.",
+  "Concludi questa uscita?": "Concludi questa uscita?",
+  "Il percorso rimarrà nelle tue uscite. Potrai rivederlo ed esportarlo quando vuoi.":
+    "Il percorso rimarrà nelle tue uscite. Potrai rivederlo ed esportarlo quando vuoi.",
+  "Concludi e salva": "Concludi e salva",
+  "Uscita conclusa. Trovi il percorso in Le mie uscite.":
+    "Uscita conclusa. Trovi il percorso in Le mie uscite.",
+  "Posizione auto salvata.": "Posizione auto salvata.",
+  "Il file supera 25 MB.": "Il file supera 25 MB.",
+  "Ripristina il backup?": "Ripristina il backup?",
+  "Ripristina dati": "Ripristina dati",
+  "Backup ripristinato. Le uscite aperte sono in pausa.":
+    "Backup ripristinato. Le uscite aperte sono in pausa.",
+  "Backup non valido o troppo grande. Scegli un file JSON esportato da MycoTrail (massimo 25 MB).":
+    "Backup non valido o troppo grande. Scegli un file JSON esportato da MycoTrail (massimo 25 MB).",
+  "MycoTrail è già aperta": "MycoTrail è già aperta",
+  "Non riusciamo ad aprire il taccuino": "Non riusciamo ad aprire il taccuino",
+  "Apriamo il tuo taccuino…": "Apriamo il tuo taccuino…",
+  "Chiudi l’altra scheda di MycoTrail, poi ricarica questa pagina.":
+    "Chiudi l’altra scheda di MycoTrail, poi ricarica questa pagina.",
+  "Un momento, prepariamo la mappa.": "Un momento, prepariamo la mappa.",
+  Riprova: "Riprova",
+  "IL TUO TACCUINO": "IL TUO TACCUINO",
+  "Navigazione principale": "Navigazione principale",
+  "Ogni uscita, una scoperta.": "Ogni uscita, una scoperta.",
+  "Custodisci i tuoi luoghi.": "Custodisci i tuoi luoghi.",
+  "Lascia al bosco la sua bellezza.": "Lascia al bosco la sua bellezza.",
+  "Il mio taccuino": "Il mio taccuino",
+  "Salvato su questo dispositivo": "Salvato su questo dispositivo",
+  "Il tuo spazio": "Il tuo spazio",
+  "Come funziona MycoTrail": "Come funziona MycoTrail",
+  "IL PROSSIMO SENTIERO TI ASPETTA": "IL PROSSIMO SENTIERO TI ASPETTA",
+  "I LUOGHI CHE VALE LA PENA RICORDARE": "I LUOGHI CHE VALE LA PENA RICORDARE",
+  "UN PASSO DOPO L’ALTRO": "UN PASSO DOPO L’ALTRO",
+  "IL TUO SPAZIO, LE TUE SCELTE": "IL TUO SPAZIO, LE TUE SCELTE",
+  "Ci vediamo nel bosco.": "Ci vediamo nel bosco.",
+  "Il tuo piccolo tesoro.": "Il tuo piccolo tesoro.",
+  "Storie di sentieri.": "Storie di sentieri.",
+  "Pronti a partire.": "Pronti a partire.",
+  "Segui il tuo percorso. Ritrova i tuoi posti.":
+    "Segui il tuo percorso. Ritrova i tuoi posti.",
+  "Ritrovamenti e fungaie, custoditi nel tuo taccuino.":
+    "Ritrovamenti e fungaie, custoditi nel tuo taccuino.",
+  "Ogni percorso rimane qui, pronto da ripercorrere.":
+    "Ogni percorso rimane qui, pronto da ripercorrere.",
+  "Gestisci i dati e porta MycoTrail sempre con te.":
+    "Gestisci i dati e porta MycoTrail sempre con te.",
+  "Ricerca GPS…": "Ricerca GPS…",
+  "In attesa del GPS": "In attesa del GPS",
+  "GPS da attivare": "GPS da attivare",
+  "Nuovo punto": "Nuovo punto",
+  esplorati: "esplorati",
+  "Esporta backup": "Esporta backup",
+  "Sei offline. I dati restano sul dispositivo; nuove aree della mappa richiedono internet.":
+    "Sei offline. I dati restano sul dispositivo; nuove aree della mappa richiedono internet.",
+  "Esplora la mappa": "Esplora la mappa",
+  "Mappa a schermo intero": "Mappa a schermo intero",
+  "Vista iniziale · Valdarno": "Vista iniziale · Valdarno",
+  "Riduci mappa": "Riduci mappa",
+  "Espandi mappa": "Espandi mappa",
+  "Centra sulla mia posizione": "Centra sulla mia posizione",
+  "Tocca la mappa per": "Tocca la mappa per",
+  "Annulla selezione": "Annulla selezione",
+  "Il bosco comincia da qui.": "Il bosco comincia da qui.",
+  "Attiva la posizione per orientarti sulla mappa.":
+    "Attiva la posizione per orientarti sulla mappa.",
+  "Ricerca…": "Ricerca…",
+  "Attiva GPS": "Attiva GPS",
+  "GPS assente o da aggiornare": "GPS assente o da aggiornare",
+  "Registrazione in corso · schermo acceso":
+    "Registrazione in corso · schermo acceso",
+  "Uscita in pausa": "Uscita in pausa",
+  "Nessuna registrazione": "Nessuna registrazione",
+  "Auto e traccia inquadrate. La traccia può avere interruzioni; non è un itinerario calcolato.":
+    "Auto e traccia inquadrate. La traccia può avere interruzioni; non è un itinerario calcolato.",
+  "Salva punto": "Salva punto",
+  "Aggiorna la posizione auto?": "Aggiorna la posizione auto?",
+  "Sostituirai il punto auto corrente. Le uscite concluse lo conserveranno.":
+    "Sostituirai il punto auto corrente. Le uscite concluse lo conserveranno.",
+  "Scegli nuova posizione": "Scegli nuova posizione",
+  "Salva auto": "Salva auto",
+  "Torna auto": "Torna auto",
+  Pausa: "Pausa",
+  Riprendi: "Riprendi",
+  "Avvia uscita": "Avvia uscita",
+  Tu: "Tu",
+  Auto: "Auto",
+  Ritrovamento: "Ritrovamento",
+  Fungaia: "Fungaia",
+  "Salvataggio…": "Salvataggio…",
+  "Dati non salvati": "Dati non salvati",
+  "Dati sul dispositivo": "Dati sul dispositivo",
+  "VERSO L’AUTO": "VERSO L’AUTO",
+  "Ripercorri i tuoi passi.": "Ripercorri i tuoi passi.",
+  "Segui sulla mappa i tratti arancioni che hai registrato.":
+    "Segui sulla mappa i tratti arancioni che hai registrato.",
+  "in linea d’aria dall’ultima posizione":
+    "in linea d’aria dall’ultima posizione",
+  "La traccia può avere interruzioni. Non viene calcolato un percorso pedonale.":
+    "La traccia può avere interruzioni. Non viene calcolato un percorso pedonale.",
+  "Non c’è una traccia registrata per questa auto. Il segnaposto indica solo la sua posizione.":
+    "Non c’è una traccia registrata per questa auto. Il segnaposto indica solo la sua posizione.",
+  "Inquadra auto e traccia": "Inquadra auto e traccia",
+  "Torna all’esplorazione": "Torna all’esplorazione",
+  "USCITA IN CORSO": "USCITA IN CORSO",
+  "USCITA IN PAUSA": "USCITA IN PAUSA",
+  "LA TUA PROSSIMA USCITA": "LA TUA PROSSIMA USCITA",
+  "Un passo alla volta.": "Un passo alla volta.",
+  "Prenditi un po’ di bosco.": "Prenditi un po’ di bosco.",
+  "Stiamo custodendo il tuo percorso.": "Stiamo custodendo il tuo percorso.",
+  "La traccia è salvata. Riparti quando vuoi.":
+    "La traccia è salvata. Riparti quando vuoi.",
+  "Avvia il percorso e lascia spazio alla scoperta.":
+    "Avvia il percorso e lascia spazio alla scoperta.",
+  Percorso: "Percorso",
+  "Tempo attivo": "Tempo attivo",
+  Concludi: "Concludi",
+  "Cerchiamo il GPS…": "Cerchiamo il GPS…",
+  "Segnale GPS assente o impreciso: in attesa di una posizione valida.":
+    "Segnale GPS assente o impreciso: in attesa di una posizione valida.",
+  "Limite traccia raggiunto. Concludi l’uscita e avviane una nuova.":
+    "Limite traccia raggiunto. Concludi l’uscita e avviane una nuova.",
+  "Tieni l’app visibile. In background l’uscita va in pausa.":
+    "Tieni l’app visibile. In background l’uscita va in pausa.",
+  "Segna un punto": "Segna un punto",
+  "Un ritrovamento, un posto speciale": "Un ritrovamento, un posto speciale",
+  "Il punto auto attuale sarà sostituito. Le uscite concluse conserveranno il loro punto originale.":
+    "Il punto auto attuale sarà sostituito. Le uscite concluse conserveranno il loro punto originale.",
+  "Auto salvata": "Auto salvata",
+  "Salva l’auto": "Salva l’auto",
+  "Il tuo punto di partenza": "Il tuo punto di partenza",
+  "Torna all’auto": "Torna all’auto",
+  "Ritrova il percorso registrato": "Ritrova il percorso registrato",
+  "Stai vedendo:": "Stai vedendo:",
+  "Nascondi percorso": "Nascondi percorso",
+  "I posti migliori sono quelli": "I posti migliori sono quelli",
+  "che impari a riconoscere.": "che impari a riconoscere.",
+  "I tuoi ultimi punti": "I tuoi ultimi punti",
+  "Il taccuino": "Il taccuino",
+  "Il tuo primo punto ti aspetta.": "Il tuo primo punto ti aspetta.",
+  "Salva un ritrovamento o una fungaia: li ritroverai qui.":
+    "Salva un ritrovamento o una fungaia: li ritroverai qui.",
+  "Aggiungi un punto": "Aggiungi un punto",
+  "Filtra punti": "Filtra punti",
+  Tutti: "Tutti",
+  Ritrovamenti: "Ritrovamenti",
+  Fungaie: "Fungaie",
+  "Cerca nei punti": "Cerca nei punti",
+  "Cerca nel taccuino…": "Cerca nel taccuino…",
+  "Un luogo da ricordare.": "Un luogo da ricordare.",
+  "Apri sulla mappa": "Apri sulla mappa",
+  "Nessun punto trovato.": "Nessun punto trovato.",
+  "Il taccuino è tutto da scrivere.": "Il taccuino è tutto da scrivere.",
+  "Prova un altro nome o cambia filtro.":
+    "Prova un altro nome o cambia filtro.",
+  "Aggiungi un punto usando il GPS o scegliendolo sulla mappa.":
+    "Aggiungi un punto usando il GPS o scegliendolo sulla mappa.",
+  CONCLUSA: "CONCLUSA",
+  "IN CORSO": "IN CORSO",
+  "IN PAUSA": "IN PAUSA",
+  "posizioni ·": "posizioni ·",
+  tratti: "tratti",
+  ore: "ore",
+  Vedi: "Vedi",
+  "Elimina questa uscita?": "Elimina questa uscita?",
+  "Il percorso sarà rimosso da questo dispositivo. I ritrovamenti rimarranno nel taccuino.":
+    "Il percorso sarà rimosso da questo dispositivo. I ritrovamenti rimarranno nel taccuino.",
+  "Elimina uscita": "Elimina uscita",
+  "Il primo sentiero è ancora da percorrere.":
+    "Il primo sentiero è ancora da percorrere.",
+  "Tocca Avvia uscita nella mappa per registrare il tuo percorso.":
+    "Tocca Avvia uscita nella mappa per registrare il tuo percorso.",
+  "I tuoi posti restano tuoi.": "I tuoi posti restano tuoi.",
+  "Punti e percorsi sono salvati solo in questo browser, su questo dispositivo. Non hai ancora un account e non vengono sincronizzati.":
+    "Punti e percorsi sono salvati solo in questo browser, su questo dispositivo. Non hai ancora un account e non vengono sincronizzati.",
+  "Se cancelli i dati del sito o cambi dispositivo, puoi perderli. Esporta periodicamente un backup.":
+    "Se cancelli i dati del sito o cambi dispositivo, puoi perderli. Esporta periodicamente un backup.",
+  "Importa backup": "Importa backup",
+  "Concludi l’uscita prima di importare un backup.":
+    "Concludi l’uscita prima di importare un backup.",
+  "MycoTrail sul tuo telefono.": "MycoTrail sul tuo telefono.",
+  "Apri MycoTrail nel tuo browser su iPhone o Android.":
+    "Apri MycoTrail nel tuo browser su iPhone o Android.",
+  "Su iPhone cerca": "Su iPhone cerca",
+  "Condividi → Aggiungi alla schermata Home":
+    "Condividi → Aggiungi alla schermata Home",
+  "Su Android apri il menu del browser e cerca":
+    "Su Android apri il menu del browser e cerca",
+  "Installa app": "Installa app",
+  o: "o",
+  "Aggiungi a schermata Home": "Aggiungi a schermata Home",
+  "Apri MycoTrail e consenti la posizione.":
+    "Apri MycoTrail e consenti la posizione.",
+  "Durante la registrazione tieni l’app in primo piano. Proviamo a mantenere lo schermo acceso quando il browser lo consente. Il tracking affidabile a schermo spento richiederà la futura versione nativa, anche se installi questa web app sulla Home.":
+    "Durante la registrazione tieni l’app in primo piano. Proviamo a mantenere lo schermo acceso quando il browser lo consente. Il tracking affidabile a schermo spento richiederà la futura versione nativa, anche se installi questa web app sulla Home.",
+  "Leggi la guida": "Leggi la guida",
+  "Pronta per orientarti.": "Pronta per orientarti.",
+  "Mappe selezionabili, bussola, schermo intero e SOS affiancano il taccuino e le uscite. Mappe scaricabili, pendenze numeriche e filtro versanti non sono ancora disponibili.":
+    "Mappe selezionabili, bussola, schermo intero e SOS affiancano il taccuino e le uscite. Mappe scaricabili, pendenze numeriche e filtro versanti non sono ancora disponibili.",
+  "La cartografia viene caricata da OpenTopoMap, OpenStreetMap o, se configurato, MapTiler: il fornitore riceve le normali richieste web per l’area visualizzata. L’app non invia a un nostro server le tue fungaie o le tue tracce.":
+    "La cartografia viene caricata da OpenTopoMap, OpenStreetMap o, se configurato, MapTiler: il fornitore riceve le normali richieste web per l’area visualizzata. L’app non invia a un nostro server le tue fungaie o le tue tracce.",
+  "Prenditi cura dei tuoi luoghi.": "Prenditi cura dei tuoi luoghi.",
+  "MycoTrail · Fatto per esplorare": "MycoTrail · Fatto per esplorare",
+  "Navigazione mobile": "Navigazione mobile",
+  "Chiudi avviso": "Chiudi avviso",
+  "Dov’è la tua auto?": "Dov’è la tua auto?",
+  "Un nuovo punto nel bosco": "Un nuovo punto nel bosco",
+  "Usa la posizione attuale oppure scegli un punto preciso sulla mappa.":
+    "Usa la posizione attuale oppure scegli un punto preciso sulla mappa.",
+  "La mia posizione": "La mia posizione",
+  "Con il GPS del dispositivo": "Con il GPS del dispositivo",
+  "Scegli sulla mappa": "Scegli sulla mappa",
+  "Per segnare anche un posto lontano": "Per segnare anche un posto lontano",
+  "Limite di 10.000 punti raggiunto. Esporta un backup e libera il taccuino.":
+    "Limite di 10.000 punti raggiunto. Esporta un backup e libera il taccuino.",
+  "Punto salvato nel tuo taccuino.": "Punto salvato nel tuo taccuino.",
+  "Nessuna nota aggiunta.": "Nessuna nota aggiunta.",
+  "Scelto sulla mappa": "Scelto sulla mappa",
+  "Modifica punto": "Modifica punto",
+  "Elimina questo punto?": "Elimina questo punto?",
+  "Il ritrovamento sarà rimosso dal taccuino su questo dispositivo.":
+    "Il ritrovamento sarà rimosso dal taccuino su questo dispositivo.",
+  "Elimina punto": "Elimina punto",
+  Elimina: "Elimina",
+  Annulla: "Annulla",
+  "Prima di entrare nel bosco": "Prima di entrare nel bosco",
+  "Segna il punto di partenza": "Segna il punto di partenza",
+  "Salva l’auto prima di avviare l’uscita. Ogni uscita mantiene il proprio punto auto.":
+    "Salva l’auto prima di avviare l’uscita. Ogni uscita mantiene il proprio punto auto.",
+  "Tieni MycoTrail aperta": "Tieni MycoTrail aperta",
+  "Se cambi app o blocchi lo schermo, la registrazione viene messa in pausa. Al ritorno tocca Riprendi. Le interruzioni non vengono collegate con linee inventate.":
+    "Se cambi app o blocchi lo schermo, la registrazione viene messa in pausa. Al ritorno tocca Riprendi. Le interruzioni non vengono collegate con linee inventate.",
+  "La mappa richiede connessione": "La mappa richiede connessione",
+  "Dopo il primo caricamento completo, l’interfaccia può riaprirsi offline. Punti e tracce sono locali, ma la cartografia non viene scaricata per l’uso offline.":
+    "Dopo il primo caricamento completo, l’interfaccia può riaprirsi offline. Punti e tracce sono locali, ma la cartografia non viene scaricata per l’uso offline.",
+  "Ritorna lungo i tuoi passi": "Ritorna lungo i tuoi passi",
+  "Il ritorno mostra la traccia registrata e il punto auto. La distanza è in linea d’aria, non un itinerario da seguire. Questa prima versione va provata su percorsi conosciuti.":
+    "Il ritorno mostra la traccia registrata e il punto auto. La distanza è in linea d’aria, non un itinerario da seguire. Questa prima versione va provata su percorsi conosciuti.",
+  "Ho capito, esploriamo": "Ho capito, esploriamo",
+  "Modifica il tuo punto": "Modifica il tuo punto",
+  "Un posto da ricordare": "Un posto da ricordare",
+  "Nome del punto": "Nome del punto",
+  "Es. Porcini sotto il castagno": "Es. Porcini sotto il castagno",
+  "Es. La fungaia del sentiero alto": "Es. La fungaia del sentiero alto",
+  "Le tue note": "Le tue note",
+  "(facoltative)": "(facoltative)",
+  "Alberi vicini, terreno, dettagli da ricordare…":
+    "Alberi vicini, terreno, dettagli da ricordare…",
+  Mappa: "Mappa",
+  "IL BOSCO, A MODO TUO.": "IL BOSCO, A MODO TUO.",
+  "Attiva bussola del dispositivo": "Attiva bussola del dispositivo",
+  "Nord in alto": "Nord in alto",
+  "Attiva bussola": "Attiva bussola",
+  Concesso: "Concesso",
+  Negato: "Negato",
+  "Da chiedere": "Da chiedere",
+  "Da verificare": "Da verificare",
+  "Non disponibile": "Non disponibile",
+  "Posizione e permessi": "Posizione e permessi",
+  "Permesso GPS:": "Permesso GPS:",
+  "Attiva posizione": "Attiva posizione",
+  Tocca: "Tocca",
+  "Quando il telefono lo chiede, scegli":
+    "Quando il telefono lo chiede, scegli",
+  Consenti: "Consenti",
+  "e, se presente,": "e, se presente,",
+  "Posizione precisa": "Posizione precisa",
+  "Se il permesso è negato, apri i permessi del sito nel tuo browser e consenti la posizione. Controlla anche che la localizzazione del telefono sia accesa.":
+    "Se il permesso è negato, apri i permessi del sito nel tuo browser e consenti la posizione. Controlla anche che la localizzazione del telefono sia accesa.",
+  "Torna qui e premi di nuovo": "Torna qui e premi di nuovo",
+  "Aiuto per iPhone e Android": "Aiuto per iPhone e Android",
+  "controlla Impostazioni → Privacy e sicurezza → Localizzazione e il permesso del browser usato. Nel browser controlla anche le impostazioni del sito.":
+    "controlla Impostazioni → Privacy e sicurezza → Localizzazione e il permesso del browser usato. Nel browser controlla anche le impostazioni del sito.",
+  "attiva Posizione nelle impostazioni del telefono. Nei permessi dell’app browser e nelle impostazioni del sito consenti la posizione.":
+    "attiva Posizione nelle impostazioni del telefono. Nei permessi dell’app browser e nelle impostazioni del sito consenti la posizione.",
+  "I nomi dei menu possono cambiare. Questa versione web non può aprire direttamente tutte le impostazioni del telefono.":
+    "I nomi dei menu possono cambiare. Questa versione web non può aprire direttamente tutte le impostazioni del telefono.",
+  "Scegli la mappa": "Scegli la mappa",
+  "Tipo di mappa": "Tipo di mappa",
+  "Da configurare: chiave MapTiler del progetto":
+    "Da configurare: chiave MapTiler del progetto",
+  "La topografica mostra curve di livello e rilievo. Pendenze numeriche e filtro dei versanti non sono ancora disponibili. Le nuove aree della mappa richiedono internet.":
+    "La topografica mostra curve di livello e rilievo. Pendenze numeriche e filtro dei versanti non sono ancora disponibili. Le nuove aree della mappa richiedono internet.",
+  "Posizione auto": "Posizione auto",
+  "La tua auto": "La tua auto",
+  "Ultima posizione rilevata": "Ultima posizione rilevata",
+  "Mappa interattiva": "Mappa interattiva",
+  "Cartografia incompleta o non disponibile. Punti e tracce restano visibili; per nuove aree serve internet.":
+    "Cartografia incompleta o non disponibile. Punti e tracce restano visibili; per nuove aree serve internet.",
+  "Usa stradale": "Usa stradale",
+  "Riprova mappa": "Riprova mappa",
+  Chiudi: "Chiudi",
+  "Coordinate copiate.": "Coordinate copiate.",
+  "Copia automatica non disponibile. Tieni premuto il testo delle coordinate per copiarlo.":
+    "Copia automatica non disponibile. Tieni premuto il testo delle coordinate per copiarlo.",
+  "Posizione MycoTrail": "Posizione MycoTrail",
+  "Posizione consegnata al sistema di condivisione; verifica l’invio nell’app scelta.":
+    "Posizione consegnata al sistema di condivisione; verifica l’invio nell’app scelta.",
+  "Condivisione non riuscita. Puoi copiare le coordinate.":
+    "Condivisione non riuscita. Puoi copiare le coordinate.",
+  "SOS · La tua posizione": "SOS · La tua posizione",
+  "Chiama 112": "Chiama 112",
+  "Apre il telefono: MycoTrail non invia automaticamente richieste di soccorso. Comunica le coordinate all’operatore. La chiamata dipende dalla copertura telefonica.":
+    "Apre il telefono: MycoTrail non invia automaticamente richieste di soccorso. Comunica le coordinate all’operatore. La chiamata dipende dalla copertura telefonica.",
+  "Posizione precedente: potrebbe non essere dove sei ora.":
+    "Posizione precedente: potrebbe non essere dove sei ora.",
+  "Posizione recente ma imprecisa.": "Posizione recente ma imprecisa.",
+  "Posizione GPS recente": "Posizione GPS recente",
+  Latitudine: "Latitudine",
+  Longitudine: "Longitudine",
+  Precisione: "Precisione",
+  "Quota GPS": "Quota GPS",
+  "Rilevata alle": "Rilevata alle",
+  "Copia coordinate": "Copia coordinate",
+  "Condividi coordinate": "Condividi coordinate",
+  "Nessuna posizione rilevata. Puoi chiamare il 112 anche senza attendere il GPS.":
+    "Nessuna posizione rilevata. Puoi chiamare il 112 anche senza attendere il GPS.",
+  "Ricerca posizione…": "Ricerca posizione…",
+  "Aggiorna posizione GPS": "Aggiorna posizione GPS",
+  "Coordinate disponibili anche senza internet se il GPS riesce a rilevarle. Condivisione e consegna del messaggio dipendono dall’app scelta e dalla rete.":
+    "Coordinate disponibili anche senza internet se il GPS riesce a rilevarle. Condivisione e consegna del messaggio dipendono dall’app scelta e dalla rete.",
+  "Impossibile leggere i dati salvati. Non verranno sovrascritti. Prova a riaprire MycoTrail in una finestra non privata del tuo browser.":
+    "Impossibile leggere i dati salvati. Non verranno sovrascritti. Prova a riaprire MycoTrail in una finestra non privata del tuo browser.",
+  "Salvataggio non riuscito: i nuovi dati sono solo in memoria. Esporta un backup prima di chiudere e libera spazio sul dispositivo.":
+    "Salvataggio non riuscito: i nuovi dati sono solo in memoria. Esporta un backup prima di chiudere e libera spazio sul dispositivo.",
+  "GPS non autorizzato. Consenti la posizione nei permessi del sito e del browser, poi riprova. Trovi aiuto in Impostazioni.":
+    "GPS non autorizzato. Consenti la posizione nei permessi del sito e del browser, poi riprova. Trovi aiuto in Impostazioni.",
+  "Posizione non disponibile. Prova in un punto più aperto.":
+    "Posizione non disponibile. Prova in un punto più aperto.",
+  "Il GPS non risponde. Spostati all’aperto e riprova.":
+    "Il GPS non risponde. Spostati all’aperto e riprova.",
+  "Il GPS richiede HTTPS e un browser con geolocalizzazione.":
+    "Il GPS richiede HTTPS e un browser con geolocalizzazione.",
+  "Bussola non disponibile. Uso la direzione GPS quando cammini.":
+    "Bussola non disponibile. Uso la direzione GPS quando cammini.",
+  "Bussola non autorizzata. Resta disponibile la direzione GPS.":
+    "Bussola non autorizzata. Resta disponibile la direzione GPS.",
+  "In attesa della bussola. Tieni il telefono in piano, lontano da metalli.":
+    "In attesa della bussola. Tieni il telefono in piano, lontano da metalli.",
+  "Sensore non accessibile. Resta disponibile la direzione GPS.":
+    "Sensore non accessibile. Resta disponibile la direzione GPS.",
+  Bussola: "Bussola",
+  "Movimento GPS": "Movimento GPS",
+  "Direzione non disponibile": "Direzione non disponibile",
+  Topografica: "Topografica",
+  "Sentieri, curve di livello e rilievo · OpenTopoMap":
+    "Sentieri, curve di livello e rilievo · OpenTopoMap",
+  Satellite: "Satellite",
+  "Immagini del territorio · MapTiler": "Immagini del territorio · MapTiler",
+  Outdoor: "Outdoor",
+  "Sentieri e rilievo ombreggiato · MapTiler":
+    "Sentieri e rilievo ombreggiato · MapTiler",
+  Stradale: "Stradale",
+  "Strade e punti di riferimento · OpenStreetMap":
+    "Strade e punti di riferimento · OpenStreetMap",
+  Aspetto: "Aspetto",
+  Tema: "Tema",
+  "Automatico / sistema": "Automatico / sistema",
+  Chiaro: "Chiaro",
+  Scuro: "Scuro",
+  "Lingua e regione": "Lingua e regione",
+  Lingua: "Lingua",
+  Paese: "Paese",
+  Altro: "Altro",
+  "Il Paese propone lingua e unità. Puoi modificarle liberamente.":
+    "Il Paese propone lingua e unità. Puoi modificarle liberamente.",
+  "Formato data": "Formato data",
+  "Formato ora": "Formato ora",
+  "24 ore": "24 ore",
+  "12 ore AM/PM": "12 ore AM/PM",
+  "Unità di misura": "Unità di misura",
+  "Sistema di misura": "Sistema di misura",
+  Metrico: "Metrico",
+  Imperiale: "Imperiale",
+  Personalizzato: "Personalizzato",
+  Temperatura: "Temperatura",
+  Distanza: "Distanza",
+  Quota: "Quota",
+  Peso: "Peso",
+  Precipitazioni: "Precipitazioni",
+  "Temperatura, peso e pioggia: preferenze pronte per le funzioni future.":
+    "Temperatura, peso e pioggia: preferenze pronte per le funzioni future.",
+  "Profilo di ricerca": "Profilo di ricerca",
+  Funghi: "Funghi",
+  Tartufi: "Tartufi",
+  Entrambi: "Entrambi",
+  Principiante: "Principiante",
+  Intermedio: "Intermedio",
+  Esperto: "Esperto",
+  "Riconfigura profilo": "Riconfigura profilo",
+  "La configurazione modifica solo preferenze e profilo. Punti e percorsi restano intatti.":
+    "La configurazione modifica solo preferenze e profilo. Punti e percorsi restano intatti.",
+  "Preferenze non salvate. Riprova prima di chiudere.":
+    "Preferenze non salvate. Riprova prima di chiudere.",
+  "Preferenze salvate sul dispositivo.": "Preferenze salvate sul dispositivo.",
+  "Benvenuto in MycoTrail": "Benvenuto in MycoTrail",
+  "Come ti chiami?": "Come ti chiami?",
+  "Da dove vieni?": "Da dove vieni?",
+  "Cosa cerchi nel bosco?": "Cosa cerchi nel bosco?",
+  "Cosa cerchi più spesso?": "Cosa cerchi più spesso?",
+  "Livello esperienza": "Livello esperienza",
+  "MycoTrail è pronto.": "MycoTrail è pronto.",
+  "Passaggio {{step}} di {{total}}": "Passaggio {{step}} di {{total}}",
+  "Il bosco, a modo tuo.": "Il bosco, a modo tuo.",
+  "Tracce, ritrovamenti e strumenti outdoor, sempre nel tuo taccuino.":
+    "Tracce, ritrovamenti e strumenti outdoor, sempre nel tuo taccuino.",
+  "Nome o nickname": "Nome o nickname",
+  "Puoi usare un nickname o lasciare il campo vuoto.":
+    "Puoi usare un nickname o lasciare il campo vuoto.",
+  "Potrai modificare tutto in seguito dalle Impostazioni.":
+    "Potrai modificare tutto in seguito dalle Impostazioni.",
+  Salta: "Salta",
+  Indietro: "Indietro",
+  Inizia: "Inizia",
+  Continua: "Continua",
+  "Entra nel bosco": "Entra nel bosco",
+  "Completa il tuo profilo MycoTrail": "Completa il tuo profilo MycoTrail",
+  "Configura profilo": "Configura profilo",
+  "Non riusciamo a leggere le preferenze.":
+    "Non riusciamo a leggere le preferenze.",
+  "I dati sono al sicuro: riprova senza cancellare i dati del sito.":
+    "I dati sono al sicuro: riprova senza cancellare i dati del sito.",
+  Porcini: "Porcini",
+  "Galletti / Finferli": "Galletti / Finferli",
+  Ovuli: "Ovuli",
+  "Mazze di tamburo": "Mazze di tamburo",
+  Morette: "Morette",
+  Prugnoli: "Prugnoli",
+  Spugnole: "Spugnole",
+  "Altri funghi": "Altri funghi",
+  "Tartufo bianco": "Tartufo bianco",
+  "Tartufo nero pregiato": "Tartufo nero pregiato",
+  Scorzone: "Scorzone",
+  Uncinato: "Uncinato",
+  Bianchetto: "Bianchetto",
+  "Altri tartufi": "Altri tartufi",
+  "segnare l’auto": "segnare l’auto",
+  "aggiungere un punto": "aggiungere un punto",
+  "Uscita del {{date}}": "Uscita del {{date}}",
+  "Posizione del {{date}}": "Posizione del {{date}}",
+  "Scegli mappa: {{name}}": "Scegli mappa: {{name}}",
+  "GPS ancora impreciso (±{{accuracy}}). Attendi un segnale entro {{limit}} oppure scegli il punto sulla mappa.":
+    "GPS ancora impreciso (±{{accuracy}}). Attendi un segnale entro {{limit}} oppure scegli il punto sulla mappa.",
+  "Contiene {{places}} punti e {{outings}} uscite. Sostituirà i dati presenti su questo dispositivo: esporta prima un backup se vuoi conservarli.":
+    "Contiene {{places}} punti e {{outings}} uscite. Sostituirà i dati presenti su questo dispositivo: esporta prima un backup se vuoi conservarli.",
+  "Esporta GPX {{name}}": "Esporta GPX {{name}}",
+  "Elimina {{name}}": "Elimina {{name}}",
+  "Salvato con GPS · ±{{accuracy}}": "Salvato con GPS · ±{{accuracy}}",
+  "Attiva bussola. {{source}}": "Attiva bussola. {{source}}",
+  "{{degrees}} gradi {{direction}}": "{{degrees}} gradi {{direction}}",
+  "Posizione GPS": "Posizione GPS",
+  "Ultima posizione nota (non attuale)": "Ultima posizione nota (non attuale)",
+  Rilevata: "Rilevata",
+  Ingrandisci: "Ingrandisci",
+  Riduci: "Riduci",
+  "Info e privacy": "Info e privacy",
+  "Dati e backup": "Dati e backup",
+  "Specie preferite": "Specie preferite",
+} as const;
