@@ -99,6 +99,9 @@ test("new user completes profile; reload and offline do not restart onboarding",
   });
   await page.evaluate(() => navigator.serviceWorker.ready.then(() => {}));
   await page.reload();
+  await expect
+    .poll(() => page.evaluate(() => !!navigator.serviceWorker.controller))
+    .toBe(true);
   await context.setOffline(true);
   await page.reload();
   await expect(

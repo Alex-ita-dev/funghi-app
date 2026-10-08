@@ -10,7 +10,7 @@ async function setup(page: Page, denied = false) {
       r.fulfill({
         contentType: "image/png",
         body: Buffer.from(
-          "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jRZkAAAAASUVORK5CYII=",
+          "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAIAAACQd1PeAAAADElEQVR4nGO48+w6AAU7Appfkrb6AAAAAElFTkSuQmCC",
           "base64",
         ),
       }),
@@ -102,9 +102,15 @@ test("fullscreen saves a point and car, returns to car and exits", async ({
   await page.getByRole("button", { name: "Espandi mappa" }).click();
   const full = page.getByRole("region", { name: "Mappa a schermo intero" });
   await full.getByRole("button", { name: "Salva auto", exact: true }).click();
-  await page.getByRole("button", { name: "La mia posizione" }).click();
+  await page
+    .getByRole("dialog")
+    .getByRole("button", { name: "La mia posizione" })
+    .click();
   await full.getByRole("button", { name: "Salva punto", exact: true }).click();
-  await page.getByRole("button", { name: "La mia posizione" }).click();
+  await page
+    .getByRole("dialog")
+    .getByRole("button", { name: "La mia posizione" })
+    .click();
   await page.getByLabel("Nome del punto").fill("Punto V2");
   await page
     .getByRole("dialog")

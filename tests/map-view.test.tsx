@@ -168,6 +168,16 @@ it("changes tiles, preserves centre/zoom and persists the preferred layer", asyn
   expect(
     document.querySelector(".leaflet-control-attribution")?.textContent,
   ).toContain("OpenStreetMap");
+  expect(
+    document.querySelector(".leaflet-control-attribution")?.textContent,
+  ).not.toContain("OpenTopoMap");
+  // A removed tile layer must not retain map move/zoom listeners.
+  act(() => {
+    map.setView([44, 12], 10, { animate: false });
+  });
+  act(() => {
+    map.setView([44, 12], 9, { animate: false });
+  });
   mounted.unmount();
   mount();
   await screen.findByText("Street");

@@ -246,6 +246,15 @@ test("no horizontal overflow and app shell reopens offline", async ({
   await expect(
     page.getByRole("button", { name: "Avvia uscita", exact: true }),
   ).toBeVisible();
+  await expect
+    .poll(() => page.evaluate(() => !!navigator.serviceWorker.controller))
+    .toBe(true);
+  await page.addInitScript(() => {
+    Object.defineProperty(navigator, "onLine", {
+      configurable: true,
+      get: () => false,
+    });
+  });
   await context.setOffline(true);
   await page.reload();
   await expect(

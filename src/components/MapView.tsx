@@ -150,8 +150,10 @@ export default function MapView(props: Props) {
     return () => {
       alive = false;
       clearTimeout(timeout);
-      tiles.off();
+      // Leaflet uses the remove event to detach map listeners and attribution.
+      // Keep that internal listener alive until removal has completed.
       tiles.remove();
+      tiles.off();
     };
   }, [props.baseLayer, tileAttempt]);
   useEffect(() => {

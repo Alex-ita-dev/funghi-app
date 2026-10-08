@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import { useId, type ReactNode } from "react";
 import { usePreferences } from "../hooks/usePreferences";
 import {
   countries,
@@ -22,10 +22,15 @@ export function SettingSelect({
   options: readonly (readonly [string, string])[];
   onChange: (value: string) => void;
 }) {
+  const labelId = useId();
   return (
     <label className="setting-row">
-      <span>{label}</span>
-      <select value={value} onChange={(e) => onChange(e.target.value)}>
+      <span id={labelId}>{label}</span>
+      <select
+        aria-labelledby={labelId}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+      >
         {options.map(([value, label]) => (
           <option key={value} value={value}>
             {label}
