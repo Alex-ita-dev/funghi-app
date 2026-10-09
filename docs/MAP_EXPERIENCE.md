@@ -33,7 +33,11 @@ Zoom e centratura sono allineati a destra; bussola a sinistra. Ritorno auto cons
 - `npm test`: 51 test superati, inclusi 8 nuovi test con Leaflet reale in jsdom, compatibilità preferenze precedenti, fallback senza chiave e watch GPS conservato durante cambio layer/tema/lingua/unità.
 - `npm run build`: superato; restano gli avvisi preesistenti lucide `use client` e bundle >500 kB.
 - `git diff --check`: superato.
-- E2E Chromium tentati con un worker e arresto al primo errore: browser Playwright assente, blocco prima dell'apertura dell'app. L'installazione era già fallita nella sessione precedente per archivio non valido; non ripetuta. Nessun E2E dichiarato superato; WebKit/Android non eseguiti localmente.
-- Suite E2E aggiornata: fallback automatico, pannello/attribuzioni e scala imperiale, 45 combinazioni configurate. Il workflow PR esistente esegue la suite sui runner GitHub: consultare il risultato effettivo.
+- [CI del 9 ottobre 2026](https://github.com/Alex-ita-dev/funghi-app/actions/runs/37884652631): **46 E2E superati, 2 esclusi, 0 falliti**; typecheck, 51 test unit/component e build superati.
+- E2E eseguiti sul runner GitHub, con Chromium desktop, Chromium Android 360×800 e WebKit iPhone. Il download dei browser locali restituisce ancora un archivio non valido: nessun risultato locale viene confuso con quello CI.
+- Due casi di riapertura offline sono esclusi soltanto su WebKit per il bug del runner [Playwright #42775](https://github.com/microsoft/playwright/issues/42775). Onboarding, persistenza con reload online, GPS e controlli cartografici continuano a essere verificati su WebKit. La riapertura offline resta coperta su Chromium desktop/Android e da verificare su Safari reale.
+- I test dei provider isolano il service worker per intercettare realmente i tile anche dopo reload; i test PWA mantengono il service worker reale.
+- La verifica browser ha permesso di correggere il cleanup dei tile: `remove()` deve precedere `off()` affinché Leaflet stacchi i listener dalla mappa e rimuova le attribuzioni del vecchio provider. Verificati cambio layer seguito da centratura e attribuzioni senza residui.
+- Le etichette dei menu preferenze/onboarding sono associate esplicitamente per evitare che il nome accessibile includa tutte le opzioni. Nessuna modifica al salvataggio delle preferenze dei blocchi precedenti.
 
-jsdom verifica lifecycle, eventi e DOM ma non il layout visivo. Restano da verificare su preview iPhone/Android: leggibilità in luce/scuro, orientamento orizzontale, provider MapTiler con chiave reale e sensori GPS reali.
+jsdom verifica lifecycle, eventi e DOM ma non il layout visivo. Le verifiche emulate non certificano sensori o autonomia: restano da verificare su dispositivo orientamento orizzontale, provider MapTiler con chiave reale e GPS reale.
