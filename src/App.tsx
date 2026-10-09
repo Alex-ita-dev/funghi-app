@@ -1,3 +1,4 @@
+import { MycoScoreCard } from "./components/MycoScoreCard";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
   ArrowDownToLine,
@@ -140,6 +141,16 @@ function Journal() {
   const [online, setOnline] = useState(navigator.onLine);
   const [busy, setBusy] = useState(false);
   const [request, setRequest] = useState<MapViewRequest | null>(null);
+  const [mycoMode, setMycoMode] = useState(false);
+  const [mycoPoint, setMycoPoint] = useState<Coordinate | null>(null);
+  const [mycoCard, setMycoCard] = useState(false);
+  useEffect(() => {
+    if (page !== "map") {
+      setMycoMode(false);
+      setMycoCard(false);
+      setMycoPoint(null);
+    }
+  }, [page]);
   const [pick, setPick] = useState<"find" | "car" | null>(null);
   const [choose, setChoose] = useState<"find" | "car" | null>(null);
   const [draft, setDraft] = useState<Draft | null>(null);
@@ -803,6 +814,24 @@ function Journal() {
                   })}
                 </p>
               )}
+              <div className="myco-toolbar">
+                <button
+                  className="button secondary"
+                  aria-pressed={mycoMode && !pick}
+                  onClick={() => {
+                    setMycoMode(!mycoMode);
+                    setMycoPoint(null);
+                    setMycoCard(false);
+                    setPick(null);
+                    setLayerPicker(false);
+                  }}
+                >
+                  {tr(mycoMode && !pick ? "myco.exit" : "myco.title")}
+                </button>
+                {mycoMode && !pick && (
+                  <small role="status">{tr("myco.pick")}</small>
+                )}
+              </div>
               <div className="map-stage">
                 <MapView
                   baseLayer={baseLayer}
@@ -818,8 +847,19 @@ function Journal() {
                   finds={data.finds}
                   trip={viewedTrip}
                   request={request}
-                  picking={!!pick}
-                  onPick={onPick}
+                  picking={!!pick || mycoMode}
+                  scorePoint={mycoMode && !pick ? mycoPoint : null}
+                  onPick={(coordinate) => {
+                    if (pick) {
+                      setMycoMode(false);
+                      setMycoCard(false);
+                      setMycoPoint(null);
+                      onPick(coordinate);
+                    } else if (mycoMode) {
+                      setMycoPoint(coordinate);
+                      setMycoCard(true);
+                    }
+                  }}
                   onFind={setDetail}
                   visible={page === "map"}
                 />
@@ -857,7 +897,7 @@ function Journal() {
                     </button>
                   </div>
                 )}
-                {!gps.enabled && !pick && (
+                {!gps.enabled && !pick && !mycoMode && (
                   <div className="map-intro">
                     <span className="intro-icon">
                       <Navigation size={22} />
@@ -1724,6 +1764,9 @@ function Journal() {
           onLocate={locateForInfo}
           onClose={() => setSos(false)}
         />
+      )}
+      {mycoMode && mycoPoint && mycoCard && !pick && (
+        <MycoScoreCard point={mycoPoint} onClose={() => setMycoCard(false)} />
       )}
       {draft && (
         <FindForm

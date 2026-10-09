@@ -171,7 +171,11 @@ describe("localization and country presets", () => {
         expect(
           value.match(/\{\{\w+\}\}/g)?.sort() ?? [],
           `${locale}: ${key}`,
-        ).toEqual(key.match(/\{\{\w+\}\}/g)?.sort() ?? []);
+        ).toEqual(
+          (dictionaries.it as Record<string, string>)[key]
+            .match(/\{\{\w+\}\}/g)
+            ?.sort() ?? [],
+        );
       }
     }
     for (const s of species) expect(keys).toContain(s.name);

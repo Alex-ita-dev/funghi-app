@@ -2965,3 +2965,23 @@ textarea:focus-visible {
   border-radius: 8px;
   margin-bottom: 8px;
 }
+
+.myco-toolbar { display:flex; align-items:center; gap:12px; padding:8px 14px; border-top:1px solid var(--line); }
+.myco-toolbar button { min-height:44px; flex-shrink:0; }
+.myco-toolbar small { line-height:1.4; }
+.myco-toolbar button[aria-pressed="true"] { background:var(--green); color:white; }
+.myco-card { display:grid; gap:12px; }
+.myco-card p,.myco-card h3 { margin:0; }
+.myco-card h3 { margin-top:10px; font-size:15px; }
+.myco-result { padding:16px; border:1px solid var(--line); border-radius:16px; text-align:center; }
+.myco-result strong { font-size:48px; line-height:1.2; }
+.myco-result strong small { font-size:19px; font-weight:500; }
+.myco-result p { margin-top:8px; font-weight:700; }
+.myco-facts { display:grid; gap:8px; margin:0; }
+.myco-facts > div { display:flex; justify-content:space-between; gap:16px; border-bottom:1px solid var(--line); padding-bottom:6px; }
+.myco-facts dt { flex:1; }
+.myco-facts dd { margin:0; text-align:right; max-width:55%; }
+.myco-reasons { margin:0; padding-left:18px; display:grid; gap:8px; }
+.myco-note { padding:12px; border-left:3px solid var(--green); font-size:13px; }
+.myco-card small { line-height:1.5; }
+.myco-card summary { cursor:pointer; padding:10px 0; }

@@ -26,6 +26,7 @@ type Props = {
   trip?: Trip;
   request: MapViewRequest | null;
   picking: boolean;
+  scorePoint?: Coordinate | null;
   onPick: (p: Coordinate) => void;
   onFind: (p: Find) => void;
   visible: boolean;
@@ -66,7 +67,10 @@ export default function MapView(props: Props) {
     layers.current = L.layerGroup().addTo(m);
     m.on("click", (e: L.LeafletMouseEvent) => {
       if (latest.current.picking)
-        latest.current.onPick({ lat: e.latlng.lat, lng: e.latlng.lng });
+        latest.current.onPick({
+          lat: e.latlng.wrap().lat,
+          lng: e.latlng.wrap().lng,
+        });
     });
     const remember = () => {
       const center = m.getCenter().wrap();
@@ -216,6 +220,23 @@ export default function MapView(props: Props) {
         .addTo(layer);
     }
   }, [props.fix, props.car, props.finds, props.trip, tr]);
+  useEffect(() => {
+    if (!map.current || !props.scorePoint) return;
+    const marker = L.circleMarker(
+      [props.scorePoint.lat, props.scorePoint.lng],
+      {
+        radius: 12,
+        color: "#ffffff",
+        weight: 3,
+        fillColor: "#7b3fa1",
+        fillOpacity: 0.9,
+        interactive: false,
+      },
+    ).addTo(map.current);
+    return () => {
+      marker.remove();
+    };
+  }, [props.scorePoint]);
   const appliedRequest = useRef<MapViewRequest | null>(null);
   useEffect(() => {
     const m = map.current;
