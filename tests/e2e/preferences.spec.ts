@@ -20,19 +20,20 @@ async function settingsPage(page: Page, language = "it") {
     .click();
 }
 async function complete(page: Page) {
-  await page.getByRole("button", { name: "Inizia", exact: true }).click();
-  await page.getByLabel("Nome o nickname").fill("Castagno");
-  await page.getByRole("button", { name: "Continua", exact: true }).click();
-  await page.getByLabel("Paese", { exact: true }).selectOption("IT");
-  await page.getByRole("button", { name: "Continua", exact: true }).click();
-  await page.getByRole("button", { name: /Entrambi/ }).click();
-  await page.getByRole("button", { name: "Continua", exact: true }).click();
-  await page.getByLabel("Porcini", { exact: true }).check();
-  await page.getByLabel("Tartufo bianco", { exact: true }).check();
-  await page.getByRole("button", { name: "Continua", exact: true }).click();
-  await page.getByRole("button", { name: "Intermedio", exact: true }).click();
-  await page.getByRole("button", { name: "Continua", exact: true }).click();
-  await page
+  const flow = page.locator(".onboarding");
+  await flow.getByRole("button", { name: "Inizia", exact: true }).click();
+  await flow.getByLabel("Nome o nickname").fill("Castagno");
+  await flow.getByRole("button", { name: "Continua", exact: true }).click();
+  await flow.getByLabel("Paese", { exact: true }).selectOption("IT");
+  await flow.getByRole("button", { name: "Continua", exact: true }).click();
+  await flow.getByRole("button", { name: /Entrambi/ }).click();
+  await flow.getByRole("button", { name: "Continua", exact: true }).click();
+  await flow.getByLabel("Porcini", { exact: true }).check();
+  await flow.getByLabel("Tartufo bianco", { exact: true }).check();
+  await flow.getByRole("button", { name: "Continua", exact: true }).click();
+  await flow.getByRole("button", { name: "Intermedio", exact: true }).click();
+  await flow.getByRole("button", { name: "Continua", exact: true }).click();
+  await flow
     .getByRole("button", { name: "Entra nel bosco", exact: true })
     .click();
 }
@@ -77,7 +78,7 @@ test.beforeEach(async ({ page }) => {
     (r) => r.abort(),
   );
 });
-test("new user completes profile; reload and offline do not restart onboarding", async ({
+test("new user completes profile and reload does not restart onboarding", async ({
   page,
   context,
 }) => {
@@ -97,9 +98,6 @@ test("new user completes profile; reload and offline do not restart onboarding",
     experience: "intermediate",
     favouriteSpecies: ["boletus-edulis-group", "tuber-magnatum"],
   });
-  await page.evaluate(() => navigator.serviceWorker.ready.then(() => {}));
-  await page.reload();
-  await context.setOffline(true);
   await page.reload();
   await expect(
     page.getByRole("heading", { name: "Ci vediamo nel bosco." }),
@@ -239,4 +237,32 @@ test("country presets and manual overrides change presentation, never stored GPS
     .click();
   await expect(page.locator(".trip-row-stat strong")).toContainText("m");
   expect(await readRecord(page, "main")).toEqual(original);
+});
+
+test("completed onboarding survives an offline reload", async ({
+  page,
+  context,
+  browserName,
+}) => {
+  test.skip(
+    browserName === "webkit",
+    "Playwright WebKit offline SW navigation bug: https://github.com/microsoft/playwright/issues/42775",
+  );
+  await page.goto("/");
+  await complete(page);
+  await expect(
+    page.getByRole("heading", { name: "Ci vediamo nel bosco." }),
+  ).toBeVisible();
+  const stored = await readRecord(page, "settings");
+  await page.evaluate(() => navigator.serviceWorker.ready.then(() => {}));
+  await page.reload();
+  await expect
+    .poll(() => page.evaluate(() => !!navigator.serviceWorker.controller))
+    .toBe(true);
+  await context.setOffline(true);
+  await page.reload();
+  await expect(
+    page.getByRole("heading", { name: "Ci vediamo nel bosco." }),
+  ).toBeVisible();
+  expect((await readRecord(page, "settings")).profile).toEqual(stored.profile);
 });

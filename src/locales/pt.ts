@@ -469,4 +469,11 @@ export default {
   "Info e privacy": "Informações e privacidade",
   "Dati e backup": "Dados e cópias",
   "Specie preferite": "Espécies favoritas",
+  "Outdoor / Sentieri": "Outdoor / Trilhos",
+  "Al momento non disponibile": "De momento indisponível",
+  "Mappa non disponibile. Mostriamo {{name}}.":
+    "Mapa indisponível. A mostrar {{name}}.",
+  "GPS non disponibile": "GPS indisponível",
+  "Precisione scarsa · ±{{accuracy}}": "Baixa precisão · ±{{accuracy}}",
+  "GPS non autorizzato": "Permissão GPS negada",
 } satisfies Record<keyof typeof it, string>;

@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { readMapPreference } from "./maps";
 
 export const languages = ["it", "en", "de", "es", "fr", "pt"] as const;
 export type Language = (typeof languages)[number];
@@ -35,6 +36,9 @@ export type Country = (typeof countries)[number];
 export const preferencesSchema = z.object({
   language: z.enum(languages),
   country: z.enum(countries),
+  mapLayer: z
+    .enum(["topo", "satellite", "outdoor", "street"])
+    .default(readMapPreference),
   theme: z.enum(["system", "light", "dark"]),
   measurementSystem: z.enum(["metric", "imperial", "custom"]),
   temperatureUnit: z.enum(["C", "F"]),
@@ -107,7 +111,9 @@ export function systemPreset(
     precipitationUnit: imperial ? "in" : "mm",
   };
 }
-export function countryPreset(country: Country): Omit<Preferences, "theme"> {
+export function countryPreset(
+  country: Country,
+): Omit<Preferences, "theme" | "mapLayer"> {
   const language: Language =
     (
       {
@@ -146,6 +152,7 @@ export function defaultSettings(
       ...countryPreset(detectCountry(locales)),
       language: detectLanguage(locales),
       theme: "system",
+      mapLayer: readMapPreference(),
     },
     profile: {
       nickname: "",

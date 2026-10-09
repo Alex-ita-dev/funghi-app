@@ -2,7 +2,7 @@ import { usePreferences } from "../hooks/usePreferences";
 import { useEffect, useRef, useState } from "react";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
-import { type MapLayer } from "../lib/maps";
+import { readMapViewport, writeMapViewport, type MapLayer } from "../lib/maps";
 import {
   type Car,
   type Coordinate,
@@ -53,10 +53,13 @@ export default function MapView(props: Props) {
   const [tilesFailed, setTilesFailed] = useState(false);
   const [tileAttempt, setTileAttempt] = useState(0);
   useEffect(() => {
+    const saved = readMapViewport();
     const m = L.map(container.current!, {
       zoomControl: false,
-      center: [43.5206, 11.4874],
-      zoom: 13,
+      center: saved ? [saved.lat, saved.lng] : [43.5206, 11.4874],
+      zoom: saved?.zoom ?? 13,
+      minZoom: 0,
+      maxZoom: 19,
       preferCanvas: true,
     });
     map.current = m;
@@ -65,6 +68,11 @@ export default function MapView(props: Props) {
       if (latest.current.picking)
         latest.current.onPick({ lat: e.latlng.lat, lng: e.latlng.lng });
     });
+    const remember = () => {
+      const center = m.getCenter().wrap();
+      writeMapViewport({ lat: center.lat, lng: center.lng, zoom: m.getZoom() });
+    };
+    m.on("moveend", remember);
     const observer = new ResizeObserver(() => m.invalidateSize());
     observer.observe(container.current!);
     return () => {
@@ -97,12 +105,32 @@ export default function MapView(props: Props) {
     if (!m || !source.url) return;
     let alive = true;
     const failedTiles = new Set<HTMLElement>();
+    let loaded = 0;
+    let fallbackSent = false;
+    const fallback = () => {
+      if (!alive || fallbackSent) return;
+      setTilesFailed(true);
+      fallbackSent = true;
+      latest.current.onFallback();
+    };
+    // Bound stalled requests too, without repeatedly cycling providers.
+    let timeout = window.setTimeout(fallback, 10000);
     setTilesFailed(false);
     const tiles = L.tileLayer(source.url, {
       maxZoom: 19,
       maxNativeZoom: source.maxNativeZoom,
       attribution: source.attribution,
       keepBuffer: 1,
+    });
+    tiles.on("loading", () => {
+      loaded = 0;
+      failedTiles.clear();
+      clearTimeout(timeout);
+      timeout = window.setTimeout(fallback, 10000);
+    });
+    tiles.on("tileload", () => {
+      loaded++;
+      clearTimeout(timeout);
     });
     tiles.on("tileerror", (event: L.TileErrorEvent) => {
       failedTiles.add(event.tile);
@@ -113,13 +141,19 @@ export default function MapView(props: Props) {
       if (alive) setTilesFailed(failedTiles.size > 0);
     });
     tiles.on("load", () => {
-      if (alive) setTilesFailed(failedTiles.size > 0);
+      clearTimeout(timeout);
+      if (!alive) return;
+      setTilesFailed(failedTiles.size > 0);
+      if (failedTiles.size > 0 && loaded === 0) fallback();
     });
     tiles.addTo(m);
     return () => {
       alive = false;
-      tiles.off();
+      clearTimeout(timeout);
+      // Leaflet uses the remove event to detach map listeners and attribution.
+      // Keep that internal listener alive until removal has completed.
       tiles.remove();
+      tiles.off();
     };
   }, [props.baseLayer, tileAttempt]);
   useEffect(() => {
@@ -182,11 +216,14 @@ export default function MapView(props: Props) {
         .addTo(layer);
     }
   }, [props.fix, props.car, props.finds, props.trip, tr]);
+  const appliedRequest = useRef<MapViewRequest | null>(null);
   useEffect(() => {
     const m = map.current;
     const request = props.request;
-    if (!m || !request) return;
+    if (!m) return;
     m.invalidateSize();
+    if (!request || request === appliedRequest.current) return;
+    appliedRequest.current = request;
     if (request.bounds?.length)
       m.fitBounds(L.latLngBounds(request.bounds.map((p) => [p.lat, p.lng])), {
         padding: [45, 70],
@@ -205,7 +242,7 @@ export default function MapView(props: Props) {
         className={`leaflet-map ${props.picking ? "picking" : ""}`}
         aria-label={tr("Mappa interattiva")}
       />
-      {tilesFailed && (
+      {tilesFailed && !props.picking && (
         <div className="map-error" role="status">
           <span>
             {" "}
@@ -213,9 +250,6 @@ export default function MapView(props: Props) {
               "Cartografia incompleta o non disponibile. Punti e tracce restano visibili; per nuove aree serve internet.",
             )}{" "}
           </span>
-          {props.baseLayer.id !== "street" && (
-            <button onClick={props.onFallback}>{tr("Usa stradale")}</button>
-          )}
           <button onClick={() => setTileAttempt((value) => value + 1)}>
             {" "}
             {tr("Riprova mappa")}{" "}

@@ -354,6 +354,28 @@ describe("React settings and onboarding", () => {
       "en",
     );
     await screen.findByRole("heading", { name: "Appearance", exact: true });
+    await user.selectOptions(
+      screen.getByLabelText("Theme", { exact: true }),
+      "dark",
+    );
+    await user.selectOptions(
+      screen.getByLabelText("Distance", { exact: true }),
+      "imperial",
+    );
+    await user.click(
+      within(
+        screen.getByRole("navigation", { name: "Main navigation" }),
+      ).getByRole("button", { name: "Explore", exact: true }),
+    );
+    await user.click(
+      screen.getByRole("button", { name: "Choose map: Topographic" }),
+    );
+    await user.click(screen.getByRole("button", { name: /^Street/ }));
+    await waitFor(async () =>
+      expect((await storage.readSettings([])).preferences.mapLayer).toBe(
+        "street",
+      ),
+    );
     expect(watch).toHaveBeenCalledTimes(1);
     expect(clear).not.toHaveBeenCalled();
     expect(
@@ -399,4 +421,23 @@ describe("React settings and onboarding", () => {
     expect(screen.getByText("Posto originale")).toBeTruthy();
     expect(await storage.readData()).toEqual(data);
   });
+});
+
+it("keeps an unavailable preferred provider while displaying a usable fallback", async () => {
+  await storage.writeSettings({
+    onboardingCompleted: true,
+    preferences: { mapLayer: "satellite" },
+  });
+  render(
+    <PreferencesProvider>
+      <App />
+    </PreferencesProvider>,
+  );
+  await screen.findByRole("button", { name: "Scegli mappa: Topografica" });
+  expect(
+    screen.getByText("Mappa non disponibile. Mostriamo Topografica."),
+  ).toBeTruthy();
+  expect((await storage.readSettings([])).preferences.mapLayer).toBe(
+    "satellite",
+  );
 });

@@ -288,3 +288,15 @@ describe("IndexedDB preferences migration and onboarding", () => {
     expect(await record("settings")).toEqual({ version: 99, private: "keep" });
   });
 });
+
+it("reads pre-map-experience settings without changing the journal and persists the new layer", async () => {
+  const settings = defaultSettings(["it-IT"], true);
+  const { mapLayer: _, ...oldPreferences } = settings.preferences;
+  const journal = emptyData();
+  await record("main", journal);
+  await record("settings", { ...settings, preferences: oldPreferences });
+  expect((await readSettings([])).preferences.mapLayer).toBe("topo");
+  await writeSettings({ preferences: { mapLayer: "street" } });
+  expect((await readSettings([])).preferences.mapLayer).toBe("street");
+  expect(await record("main")).toEqual(journal);
+});

@@ -2591,3 +2591,193 @@ textarea:focus-visible {
     padding: 20px;
   }
 }
+
+/* Map presentation: one collapsible selector, outside the tile/attribution area. */
+.map-layer-panel {
+  flex-shrink: 0;
+  padding: 4px 12px 12px;
+  background: var(--surface, #fffdf8);
+  border-bottom: 1px solid var(--line);
+  max-height: 35dvh;
+  overflow-y: auto;
+}
+.map-layer-panel header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 13px;
+}
+.map-layer-panel .layer-choices {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  margin: 0;
+}
+.layer-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  text-align: left;
+  min-height: 64px;
+  min-width: 0;
+  padding: 8px;
+  border: 2px solid var(--line);
+  border-radius: 10px;
+  background: var(--surface, #fffdf8);
+  color: var(--ink, #214c3b);
+}
+.layer-option.selected {
+  border-color: var(--green);
+  background: var(--surface-selected, #e7eee1);
+}
+.layer-option:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+.layer-option > span:nth-child(2) {
+  flex: 1;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.layer-option strong {
+  display: block;
+  font-size: 12px;
+}
+.layer-option small {
+  display: block;
+  font-size: 10px;
+  margin-top: 3px;
+}
+.layer-option > svg {
+  flex-shrink: 0;
+}
+.layer-preview {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 36px;
+  height: 40px;
+  border-radius: 6px;
+  color: #254935;
+  background: #e3ebd4;
+}
+.layer-preview-topo {
+  background: repeating-radial-gradient(
+    ellipse at 0 0,
+    #dce5c9 0 5px,
+    #b3c69c 6px 7px
+  );
+}
+.layer-preview-satellite {
+  background: linear-gradient(35deg, #315947, #8e9d66, #425d4c);
+  color: white;
+}
+.layer-preview-outdoor {
+  background: linear-gradient(
+    120deg,
+    #e1edcd 45%,
+    #c9b78e 46% 51%,
+    #d3e4bd 52%
+  );
+}
+.layer-preview-street {
+  background: repeating-linear-gradient(90deg, #eae8dd 0 9px, #fff 10px 13px);
+}
+.map-provider-notice {
+  flex-shrink: 0;
+  margin: 0;
+  padding: 6px 12px;
+  font-size: 12px;
+  color: var(--ink);
+  background: var(--surface-soft);
+}
+.layer-button,
+.map-header-actions .icon-button {
+  min-height: 44px;
+}
+.map-stage .leaflet-top.leaflet-right {
+  top: 2px;
+  right: 2px;
+}
+.map-stage .leaflet-control-zoom a {
+  width: 44px !important;
+  height: 44px !important;
+  line-height: 44px !important;
+  background: var(--surface, #fffdf8);
+  color: var(--green) !important;
+}
+.map-stage .locate-button {
+  right: 12px;
+  top: 112px;
+  width: 46px;
+  height: 46px;
+  border-radius: 8px;
+}
+.map-stage .compass-control {
+  top: 12px;
+  left: 12px;
+  min-height: 46px;
+  max-width: calc(100% - 86px);
+}
+.map-stage .leaflet-bottom.leaflet-right {
+  width: 100%;
+}
+.map-stage .leaflet-control-attribution {
+  float: none;
+  margin: 0;
+  padding: 3px 6px;
+  line-height: 1.4;
+  text-align: right;
+  overflow-wrap: anywhere;
+  color: var(--ink, #214c3b);
+}
+.map-stage .leaflet-control-attribution a {
+  color: var(--green, #214c3b);
+  text-decoration: underline;
+}
+.map-stage .leaflet-control-scale {
+  margin-bottom: 44px !important;
+}
+.map-stage .map-intro {
+  bottom: 78px;
+}
+.map-stage .map-error {
+  top: 90px;
+  right: 74px;
+  max-height: 160px;
+  overflow: auto;
+}
+.map-stage .pick-banner {
+  top: 90px;
+  right: 74px;
+}
+.map-layer-panel button:focus-visible,
+.map-stage button:focus-visible {
+  outline: 3px solid var(--green);
+  outline-offset: 2px;
+}
+@media (max-width: 380px) {
+  .layer-preview {
+    width: 26px;
+  }
+  .layer-option {
+    gap: 4px;
+    padding: 6px;
+  }
+  .layer-option small {
+    font-size: 9px;
+  }
+}
+.gps-badge {
+  max-width: 100%;
+  white-space: normal;
+}
+.gps-badge > span {
+  flex-shrink: 0;
+}
+/* Short/landscape screens may scroll rather than overlap controls or credits. */
+.map-fullscreen {
+  overflow-y: auto;
+}
+.map-fullscreen .map-stage {
+  min-height: 280px;
+}
