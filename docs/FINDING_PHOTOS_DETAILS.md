@@ -4,11 +4,11 @@ Base: main dopo PR #2 (`5c9f206`). Nessun backend, account, upload, AI o API amb
 
 ## Schema e compatibilità
 
-IndexedDB `mycotrail` passa da 1 a 2 aggiungendo tre store: `photoMeta` (keyPath id, indice findingId), `photos` (Blob JPEG), `photoThumbs` (Blob JPEG piccolo). Lo store `data` e le chiavi `main`/`settings` non vengono riscritti dalla migrazione. Chiudere altre schede dell'app se il browser segnala database occupato; una versione precedente aperta può bloccare l'upgrade.
+IndexedDB `mycotrail` passa da 1 a 2 aggiungendo tre store: `photoMeta` (keyPath id, indice findingId), `photos` (byte JPEG + MIME), `photoThumbs` (byte JPEG piccolo + MIME). Lo store `data` e le chiavi `main`/`settings` non vengono riscritti dalla migrazione. Chiudere altre schede dell'app se il browser segnala database occupato; una versione precedente aperta può bloccare l'upgrade.
 
 Il taccuino resta V1 con nuovi campi opzionali: quantity (intero, anche zero), weightKg, habitats (ID stabili), soil, aspect (punti cardinali internazionali), altitudeM, spotId. Vecchi punti, coordinate, note e tracce restano validi. I tipi esistenti find/spot sono riutilizzati. Una fungaia può avere più ritrovamenti tramite spotId; eliminare/convertire una fungaia scollega i figli senza eliminarli. Storico ordinato per data decrescente, numero di registrazioni, peso totale noto e ultima data. Il totale conta registrazioni, non esemplari.
 
-Ogni foto ha ID indipendente, findingId, MIME, timestamp, dimensione originale in byte, larghezza/altezza, primary e localOnly. Una foto principale per punto; fino a 8 foto. Nessuna immagine in localStorage o Base64 nel record principale. ID e proprietà locale preparano una futura sincronizzazione senza implementarla.
+Ogni foto ha ID indipendente, findingId, MIME, timestamp, dimensione originale in byte, larghezza/altezza, primary e localOnly. Una foto principale per punto; fino a 8 foto. I byte sono ArrayBuffer separati: evitano i problemi di persistenza Blob in alcuni contesti WebKit. La UI riceve Blob; le righe Blob delle prime revisioni restano leggibili, senza ricompressione o migrazione distruttiva. Nessuna immagine in localStorage o Base64 nel record principale. ID e proprietà locale preparano una futura sincronizzazione senza implementarla.
 
 ## Foto e UI
 
@@ -28,7 +28,7 @@ Import accetta V1 senza foto e V2 con foto; valida schema, relazioni, ID univoci
 
 ## Verifica
 
-Typecheck, build e 63 test unit/component superati localmente. Coperti schema legacy, upgrade reale DB V1, CRUD Blob, rollback su riferimenti mancanti, backup V1/V2 e ripristino, filtri/storico e unità peso. Test GPS/preferenze precedenti mantenuti.
+Typecheck, build e 64 test unit/component superati localmente. Coperti schema legacy, upgrade reale DB V1, CRUD Blob, rollback su riferimenti mancanti, backup V1/V2 e ripristino, filtri/storico e unità peso. Test GPS/preferenze precedenti mantenuti.
 
 E2E aggiunto sui tre browser configurati: immagine 2400 px ridimensionata, due foto, riapertura, visualizzatore, modifica e promozione principale, eliminazione, backup/ripristino e riapertura. Consultare il check GitHub della PR per il risultato effettivo; i browser locali non sono disponibili nell'ambiente. Restano i due casi offline WebKit esclusi nel blocco precedente (bug Playwright #42775). Test reali di fotocamera/HEIC, quota del sensore e spazio disponibile richiedono iPhone/Android fisici.
 

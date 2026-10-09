@@ -5,7 +5,8 @@ test("finding photos survive reload, edit, backup restore and deletion", async (
   page,
 }) => {
   page.on("console", (message) => {
-    if (message.type() === "error") console.error(message.text());
+    if (message.type() === "error" && message.text().startsWith("Local save failed:"))
+      console.error(message.text());
   });
   await seedLegacy(page);
   await page.route(
@@ -57,7 +58,9 @@ test("finding photos survive reload, edit, backup restore and deletion", async (
             t.oncomplete = () => {
               resolve({
                 meta: m.result,
-                sizes: b.result.map((x: Blob) => x.size),
+                sizes: b.result.map((x: Blob | { bytes: ArrayBuffer }) =>
+                  x instanceof Blob ? x.size : x.bytes.byteLength,
+                ),
                 thumbs: thumb.result.length,
               });
               db.close();

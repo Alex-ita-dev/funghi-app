@@ -195,3 +195,35 @@ it("converts canonical kg to metric and imperial without changing stored weight"
   );
   expect(lbToKg(kgToLb(1.2))).toBeCloseTo(1.2, 10);
 });
+
+it("stores binary bytes and still reads and exports older Blob photo rows", async () => {
+  const data = { ...emptyData(), finds: [find] };
+  await writeData(data, { findingId: "one", photos: [photo()] });
+  const database = await new Promise<IDBDatabase>((resolve, reject) => {
+    const request = indexedDB.open("mycotrail");
+    request.onsuccess = () => resolve(request.result);
+    request.onerror = () => reject(request.error);
+  });
+  try {
+    const stored = await new Promise<{ bytes: ArrayBuffer; type: string }>((resolve) => {
+      const request = database.transaction("photos").objectStore("photos").get("photo");
+      request.onsuccess = () => resolve(request.result);
+    });
+    expect(stored.bytes).toBeInstanceOf(ArrayBuffer);
+    expect(stored.type).toBe("image/jpeg");
+    expect(stored.bytes.byteLength).toBe(jpeg.size);
+    await new Promise<void>((resolve, reject) => {
+      const tx = database.transaction(["photos", "photoThumbs"], "readwrite");
+      tx.objectStore("photos").put(jpeg, "photo");
+      tx.objectStore("photoThumbs").put(jpeg, "photo");
+      tx.oncomplete = () => resolve();
+      tx.onabort = () => reject(tx.error);
+    });
+    expect((await readPhotoBlob("photo"))?.type).toBe("image/jpeg");
+    const recovered = parseBackup(await exportBackup(data));
+    expect(await recovered.photos[0].blob.arrayBuffer()).toEqual(await jpeg.arrayBuffer());
+    expect(await recovered.photos[0].thumbnail.arrayBuffer()).toEqual(await jpeg.arrayBuffer());
+  } finally {
+    database.close();
+  }
+});

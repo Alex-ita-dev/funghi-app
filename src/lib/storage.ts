@@ -13,6 +13,13 @@ import {
   type SettingsPatch,
   type UserSettings,
 } from "./preferences";
+// Keep binary bytes in IndexedDB: WebKit's Blob persistence can fail in
+// ephemeral contexts. The UI still receives Blobs; old Blob rows remain readable.
+type StoredPhoto = { bytes: ArrayBuffer; type: string };
+function photoBlob(value: Blob | StoredPhoto | undefined): Blob | undefined {
+  if (value === undefined || value instanceof Blob) return value;
+  return new Blob([value.bytes], { type: value.type });
+}
 let connection: Promise<IDBDatabase> | undefined;
 function db(): Promise<IDBDatabase> {
   if (!connection)
@@ -142,7 +149,7 @@ export async function readPhotoBlob(
   const name = thumbnail ? "photoThumbs" : "photos";
   return new Promise((resolve, reject) => {
     const r = database.transaction(name).objectStore(name).get(id);
-    r.onsuccess = () => resolve(r.result);
+    r.onsuccess = () => resolve(photoBlob(r.result));
     r.onerror = () => reject(r.error);
   });
 }
@@ -179,6 +186,16 @@ export async function writeData(
   for (const rows of grouped.values())
     if (rows.length > MAX_PHOTOS || rows.filter((p) => p.primary).length !== 1)
       throw new Error("Invalid photo selection");
+  // Read bytes before opening the transaction: awaiting Blob.arrayBuffer()
+  // inside a transaction can make it inactive. Existing images are not reread.
+  const encoded = new Map<string, { blob: StoredPhoto; thumbnail: StoredPhoto }>();
+  for (const p of incoming) {
+    if (p.blob && p.thumbnail)
+      encoded.set(p.id, {
+        blob: { bytes: await p.blob.arrayBuffer(), type: p.blob.type },
+        thumbnail: { bytes: await p.thumbnail.arrayBuffer(), type: p.thumbnail.type },
+      });
+  }
   const database = await db();
   await new Promise<void>((resolve, reject) => {
     const tx = database.transaction(
@@ -227,16 +244,20 @@ export async function writeData(
           const { blob, thumbnail, ...info } = p;
           meta.put(info);
           if (blob) {
-            blobs.put(blob, p.id);
-            thumbs.put(thumbnail, p.id);
+            blobs.put(encoded.get(p.id)!.blob, p.id);
+            thumbs.put(encoded.get(p.id)!.thumbnail, p.id);
           }
         }
         main.put(data, "main");
       };
     };
     tx.oncomplete = () => resolve();
-    tx.onerror = () => reject(tx.error);
-    tx.onabort = () => reject(tx.error ?? new Error("Salvataggio interrotto"));
+    let failure: DOMException | null = null;
+    tx.onerror = (event) => {
+      // Request errors bubble before tx.error is populated. Wait for rollback.
+      failure = (event.target as IDBRequest).error ?? tx.error;
+    };
+    tx.onabort = () => reject(failure ?? tx.error ?? new Error("Salvataggio interrotto"));
   });
 }
 export function download(content: string, name: string, type: string): void {
@@ -266,18 +287,19 @@ export async function readPhotoArchive(
         const blob = tx.objectStore("photos").get(meta.id),
           thumb = tx.objectStore("photoThumbs").get(meta.id);
         thumb.onsuccess = () => {
-          if (!blob.result || !thumb.result) {
+          const image = photoBlob(blob.result), thumbnail = photoBlob(thumb.result);
+          if (!image || !thumbnail) {
             failure = new Error("Foto mancanti: backup non creato.");
             tx.abort();
             return;
           }
-          size += blob.result.size + thumb.result.size;
+          size += image.size + thumbnail.size;
           if (size > 70 * 1024 * 1024) {
             failure = new Error("Il backup supera 100 MB.");
             tx.abort();
             return;
           }
-          result.push({ ...meta, blob: blob.result, thumbnail: thumb.result });
+          result.push({ ...meta, blob: image, thumbnail });
         };
       }
     };
