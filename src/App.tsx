@@ -819,7 +819,7 @@ function Journal() {
                   className="button secondary"
                   aria-pressed={mycoMode && !pick}
                   onClick={() => {
-                    setMycoMode(!mycoMode);
+                    setMycoMode(!(mycoMode && !pick));
                     setMycoPoint(null);
                     setMycoCard(false);
                     setPick(null);

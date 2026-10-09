@@ -150,6 +150,10 @@ test("offline without cache stays recoverable and does not modify existing data"
     "richiede una connessione",
   );
   await dialog.getByRole("button", { name: "Chiudi", exact: true }).click();
+  // Switching from finding selection back to MycoScore must activate it.
+  await page.getByRole("button", { name: "Segna un punto" }).click();
+  await page.getByRole("button", { name: "Scegli sulla mappa" }).click();
+  await page.getByRole("button", { name: "MycoScore", exact: true }).click();
   await page
     .getByRole("button", { name: "Esci da MycoScore", exact: true })
     .click();
