@@ -1,35 +1,15 @@
+import { weather } from "./myco-fixtures";
 import { test, expect, type Page } from "@playwright/test";
 import { seedLegacy, readRecord } from "./fixtures";
 test.use({ serviceWorkers: "block" });
-function weather() {
-  const today = Math.floor(Date.now() / 86400000) * 86400000;
-  const dates = Array.from({ length: 30 }, (_, i) =>
-    new Date(today - (30 - i) * 86400000).toISOString().slice(0, 10),
-  );
-  return {
-    elevation: 612,
-    daily: {
-      time: dates,
-      rain_sum: dates.map((_, i) => (i === 25 ? 10 : 3)),
-      showers_sum: dates.map(() => 0),
-      temperature_2m_mean: dates.map(() => 17),
-      temperature_2m_min: dates.map(() => 12),
-      temperature_2m_max: dates.map(() => 22),
-      et0_fao_evapotranspiration: dates.map(() => 2),
-    },
-    hourly: {
-      time: dates.flatMap((d) =>
-        Array.from(
-          { length: 24 },
-          (_, h) => `${d}T${String(h).padStart(2, "0")}:00`,
-        ),
-      ),
-      relative_humidity_2m: Array(720).fill(80),
-      soil_temperature_6cm: Array(720).fill(16),
-      soil_moisture_3_to_9cm: Array(720).fill(0.3),
-    },
-  };
-}
+test.beforeEach(async ({ page }) => {
+  await page.route("https://api.open-meteo.com/v1/elevation?**", (route) => {
+    const n = new URL(route.request().url()).searchParams
+      .get("latitude")!
+      .split(",").length;
+    return route.fulfill({ json: { elevation: Array(n).fill(612) } });
+  });
+});
 async function openPoint(page: Page) {
   await page.getByRole("button", { name: "MycoScore", exact: true }).click();
   await page
@@ -50,7 +30,7 @@ test("point score, explanation, units, cached reload and GPS journal isolation",
     ),
   );
   let calls = 0;
-  await page.route("https://api.open-meteo.com/**", (route) => {
+  await page.route("https://api.open-meteo.com/v1/forecast?**", (route) => {
     calls++;
     const url = new URL(route.request().url());
     expect(url.searchParams.get("latitude")).toBe("43.52");
@@ -168,7 +148,7 @@ test("missing soil remains absent while a partial score is shown", async ({
   await seedLegacy(page);
   const raw = weather();
   raw.hourly.soil_moisture_3_to_9cm = Array(720).fill(null);
-  await page.route("https://api.open-meteo.com/**", (r) =>
+  await page.route("https://api.open-meteo.com/v1/forecast?**", (r) =>
     r.fulfill({ json: raw }),
   );
   await page.goto("/");

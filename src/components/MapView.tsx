@@ -1,3 +1,5 @@
+import { scoreColor, type Viewport } from "../lib/mycoArea";
+import type { AreaAnalysis } from "../services/mycoAnalysis";
 import { usePreferences } from "../hooks/usePreferences";
 import { useEffect, useRef, useState } from "react";
 import L from "leaflet";
@@ -27,6 +29,10 @@ type Props = {
   request: MapViewRequest | null;
   picking: boolean;
   scorePoint?: Coordinate | null;
+  onViewport?: (v: Viewport) => void;
+  area?: AreaAnalysis | null;
+  areaOpacity?: number;
+  onCell?: (index: number) => void;
   onPick: (p: Coordinate) => void;
   onFind: (p: Find) => void;
   visible: boolean;
@@ -49,6 +55,7 @@ export default function MapView(props: Props) {
   const container = useRef<HTMLDivElement>(null);
   const map = useRef<L.Map | null>(null);
   const layers = useRef<L.LayerGroup | null>(null);
+  const heatLayers = useRef<L.Path[]>([]);
   const latest = useRef(props);
   latest.current = props;
   const [tilesFailed, setTilesFailed] = useState(false);
@@ -65,6 +72,7 @@ export default function MapView(props: Props) {
     });
     map.current = m;
     layers.current = L.layerGroup().addTo(m);
+    m.createPane("mycoHeat").style.zIndex = "350";
     m.on("click", (e: L.LeafletMouseEvent) => {
       if (latest.current.picking)
         latest.current.onPick({
@@ -74,9 +82,12 @@ export default function MapView(props: Props) {
     });
     const remember = () => {
       const center = m.getCenter().wrap();
-      writeMapViewport({ lat: center.lat, lng: center.lng, zoom: m.getZoom() });
+      const viewport = { lat: center.lat, lng: center.lng, zoom: m.getZoom() };
+      writeMapViewport(viewport);
+      latest.current.onViewport?.(viewport);
     };
     m.on("moveend", remember);
+    remember();
     const observer = new ResizeObserver(() => m.invalidateSize());
     observer.observe(container.current!);
     return () => {
@@ -85,6 +96,42 @@ export default function MapView(props: Props) {
       map.current = null;
     };
   }, []);
+  useEffect(() => {
+    const m = map.current,
+      area = props.area;
+    if (!m || !area) return;
+    const renderer = L.canvas({ pane: "mycoHeat", padding: 0.3 }).addTo(m);
+    const group = L.layerGroup().addTo(m);
+    const attribution =
+      '<a href="https://open-meteo.com/en/docs/elevation-api" target="_blank" rel="noreferrer">Open-Meteo / Copernicus DEM</a>';
+    m.attributionControl.addAttribution(attribution);
+    heatLayers.current = area.cells.map((cell, i) => {
+      const rectangle = L.rectangle(area.grid.cells[i].bounds, {
+        renderer,
+        color: scoreColor(cell.score),
+        fillColor: scoreColor(cell.score),
+        weight: 1,
+        opacity: 0.7,
+        fillOpacity: latest.current.areaOpacity ?? 0.35,
+        bubblingMouseEvents: false,
+      });
+      rectangle.on("click", () => latest.current.onCell?.(i));
+      rectangle.addTo(group);
+      return rectangle;
+    });
+    return () => {
+      heatLayers.current.forEach((l) => l.off());
+      heatLayers.current = [];
+      group.remove();
+      renderer.remove();
+      m.attributionControl.removeAttribution(attribution);
+    };
+  }, [props.area]);
+  useEffect(() => {
+    heatLayers.current.forEach((layer) =>
+      layer.setStyle({ fillOpacity: props.areaOpacity ?? 0.35 }),
+    );
+  }, [props.areaOpacity]);
   useEffect(() => {
     if (!map.current) return;
     const zoom = L.control

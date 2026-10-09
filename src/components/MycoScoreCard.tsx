@@ -1,30 +1,58 @@
 import { useEffect, useState } from "react";
 import { Modal } from "./Modal";
 import { usePreferences } from "../hooks/usePreferences";
-import { computeMycoScore, type speciesProfiles } from "../lib/mycoScore";
+import { type speciesProfiles } from "../lib/mycoScore";
+import { computeMycoScoreV2, type Profile } from "../lib/mycoScoreV2";
+import {
+  aspectDirection,
+  emptyTerrain,
+  type Terrain,
+} from "../lib/mycoTerrain";
+import { loadTerrains } from "../services/mycoTerrain";
+import type { CellSample } from "../services/mycoAnalysis";
 import { loadEnvironment } from "../services/mycoEnvironment";
 import { formatTemperature, formatPrecipitation } from "../lib/units";
 import type { Coordinate } from "../lib/model";
 export function MycoScoreCard({
   point,
   onClose,
+  sample,
+  initialProfile = "generic",
 }: {
   point: Coordinate;
   onClose: () => void;
+  sample?: CellSample | null;
+  initialProfile?: Profile;
 }) {
   const { tr, settings, altitude, dateTime, dateLabel } = usePreferences();
   const p = settings.preferences;
-  const [profile, setProfile] =
-    useState<keyof typeof speciesProfiles>("generic");
+  const [profile, setProfile] = useState<keyof typeof speciesProfiles>(
+    sample?.profile ?? initialProfile,
+  );
   const [result, setResult] = useState<Awaited<
     ReturnType<typeof loadEnvironment>
   > | null>(null);
+  const [terrain, setTerrain] = useState<Terrain>(
+    sample?.terrain ?? emptyTerrain,
+  );
   const [error, setError] = useState("");
   const [attempt, setAttempt] = useState(0);
   useEffect(() => {
     const controller = new AbortController();
     setResult(null);
+    setTerrain(emptyTerrain);
     setError("");
+    if (sample) {
+      setResult(sample.environment);
+      setTerrain(sample.terrain);
+      setProfile(sample.profile);
+      return () => controller.abort();
+    }
+    void loadTerrains([point], controller.signal)
+      .then((rows) => {
+        if (!controller.signal.aborted) setTerrain(rows[0]);
+      })
+      .catch(() => {});
     void loadEnvironment(point, controller.signal)
       .then((value) => {
         if (!controller.signal.aborted) setResult(value);
@@ -34,8 +62,15 @@ export function MycoScoreCard({
           setError(e.message.startsWith("myco.") ? e.message : "myco.error");
       });
     return () => controller.abort();
-  }, [point.lat, point.lng, attempt]);
-  const computed = result ? computeMycoScore(result.data, profile) : null;
+  }, [point.lat, point.lng, attempt, sample]);
+  const computed = result
+    ? computeMycoScoreV2(
+        { ...result.data, ...point },
+        terrain,
+        profile,
+        sample?.analysisDate,
+      )
+    : null;
   const n = (v: number, digits = 1) =>
     new Intl.NumberFormat(p.language, { maximumFractionDigits: digits }).format(
       v,
@@ -179,18 +214,27 @@ export function MycoScoreCard({
             </dl>
             <h3>{tr("myco.terrain")}</h3>
             <dl className="myco-facts">
-              {field("myco.altitude", result.data.elevationM, altitude)}
-              {field("myco.aspect", null)}
-              {field("myco.slope", null)}
+              {field(
+                "myco.altitude",
+                terrain.elevationM ?? result.data.elevationM,
+                altitude,
+              )}
+              {field("myco.aspect", terrain.aspectDegrees, (v) =>
+                tr(`direzione.${aspectDirection(v)}`),
+              )}
+              {field("myco.slope", terrain.slopeDegrees, (v) => `${n(v)}°`)}
             </dl>
-            <small>{tr("myco.gridNote")}</small>
+            {terrain.slopeDegrees !== null && terrain.slopeDegrees < 2 && (
+              <small>{tr("heat.flat")}</small>
+            )}
+            <small>{tr("heat.resolution")}</small>
             <details>
               <summary>{tr("myco.factors")}</summary>
               <dl className="myco-facts">
                 {computed.factors.map((f) => (
                   <div key={f.id}>
                     <dt>
-                      {tr(`myco.factor.${f.id}`)} ({n(f.weight, 0)}%)
+                      {tr(`myco.factor.${f.id}`)} ({n(f.weight, 2)}%)
                     </dt>
                     <dd>
                       {f.score === null
@@ -200,7 +244,7 @@ export function MycoScoreCard({
                   </div>
                 ))}
               </dl>
-              <p>{tr("myco.formulaNote")}</p>
+              <p>{tr("heat.formula")}</p>
             </details>
           </>
         )}
@@ -208,7 +252,7 @@ export function MycoScoreCard({
         <small>{tr("myco.privacy")}</small>
         <p>
           <a href="https://open-meteo.com/" target="_blank" rel="noreferrer">
-            {tr("myco.source")}
+            {tr("myco.source")} / Copernicus DEM
           </a>{" "}
           ·{" "}
           <a

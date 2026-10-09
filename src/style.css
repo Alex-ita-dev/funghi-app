@@ -2988,3 +2988,88 @@ textarea:focus-visible {
 .myco-card .field { display:grid; gap:8px; }
 .myco-card select { min-height:44px; width:100%; padding:10px 12px; font:inherit; font-size:16px; color:var(--ink); background:var(--surface, #fcfcf8); border:1px solid var(--line); border-radius:8px; }
 .myco-card button { min-height:44px; }
+
+.myco-area {
+  margin: 0 0 12px;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: var(--surface);
+  color: var(--ink);
+}
+.heat-actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+}
+.heat-actions label {
+  flex: 1 1 120px;
+  font-size: 12px;
+}
+.myco-area select {
+  display: block;
+  width: 100%;
+  min-height: 44px;
+  padding: 8px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  font-size: 16px;
+  background: var(--surface);
+  color: var(--ink);
+}
+.myco-area summary {
+  cursor: pointer;
+  padding: 12px 0;
+  min-height: 44px;
+}
+.myco-area small {
+  display: block;
+  font-size: 12px;
+  line-height: 1.5;
+}
+.myco-area progress {
+  display: block;
+  width: 100%;
+  height: 10px;
+  margin: 8px 0;
+}
+.heat-stamp {
+  margin: 8px 0;
+  font-size: 12px;
+}
+.heat-legend {
+  display: grid;
+  gap: 6px;
+  font-size: 12px;
+}
+.heat-legend i {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  margin-right: 8px;
+  border-radius: 3px;
+}
+.myco-area input[type="range"] {
+  min-height: 44px;
+  width: 100%;
+}
+.heat-scale {
+  display: flex;
+  margin: 6px 0;
+}
+.heat-scale span {
+  border-top: 5px solid;
+  flex: 1;
+  text-align: center;
+  font-size: 11px;
+  padding-top: 4px;
+}
+.heat-cells {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(90px, 1fr));
+  gap: 6px;
+  max-height: 240px;
+  overflow: auto;
+}

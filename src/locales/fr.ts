@@ -630,4 +630,32 @@ export default {
   "myco.factor.postRain": "Temps depuis la pluie",
   "myco.factor.drying": "Dessèchement",
   "myco.factor.humidity": "Humidité de l’air",
+  "heat.title": "Afficher la carte des conditions",
+  "heat.analyze": "Analyser cette zone",
+  "heat.refresh": "Actualiser l’analyse",
+  "heat.cancel": "Annuler",
+  "heat.area": "Zone {{km}} × {{km}} km · {{n}} cellules",
+  "heat.zoom":
+    "Rapprochez-vous de la zone à analyser. Indisponible près des pôles ou de l’antiméridien.",
+  "heat.progress":
+    "Analyse des conditions… {{n}} / {{total}} cellules analysées",
+  "heat.offline":
+    "Une connexion est nécessaire pour analyser une nouvelle zone.",
+  "heat.moved":
+    "Zone ou profil modifié. La carte affiche encore l’analyse précédente ; actualisez quand vous le souhaitez.",
+  "heat.legend": "Légende MycoScore",
+  "heat.opacity": "Opacité",
+  "heat.cells": "Cellules et scores (accès clavier)",
+  "heat.resolution":
+    "Les cellules proches partagent la météo ; MNE Copernicus d’environ 90 m. Elles ne représentent ni des mesures locales ni une présence certaine de champignons.",
+  "heat.partial":
+    "Analyse partielle : certaines cellules ou données du terrain sont indisponibles. Gris = données insuffisantes.",
+  "heat.flat": "Exposition non significative sur un terrain presque plat.",
+  "heat.formula":
+    "Heuristique v2 non validée biologiquement. La météo v1 conserve 87–90 % du poids ; terrain et saison sont secondaires. Les poids absents sont exclus puis renormalisés.",
+  "heat.privacy":
+    "L’analyse envoie uniquement les coordonnées de la grille à Open-Meteo.",
+  "myco.factor.slope": "Pente",
+  "myco.factor.aspect": "Exposition et assèchement",
+  "myco.factor.season": "Saison (heuristique)",
 } satisfies Record<keyof typeof it, string>;

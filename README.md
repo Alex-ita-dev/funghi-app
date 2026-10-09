@@ -96,3 +96,9 @@ Il nome MycoTrail è provvisorio ai fini del lancio: disponibilità del marchio 
 Ritrovamenti e foto locali: [schema, backup e limiti](docs/FINDING_PHOTOS_DETAILS.md).
 
 MycoScore puntuale: [formula, dati e limiti v1](docs/MYCOSCORE_V1.md).
+
+### MycoScore v2: mappa locale delle condizioni
+
+Dalla modalità MycoScore, **Mostra mappa condizioni → Analizza questa zona** analizza esplicitamente 25–49 celle (massimo 4 km²). Overlay Canvas Leaflet, profili Generico/Porcini, terreno Copernicus con pendenza/esposizione, annullamento e cache offline. Nessun ricalcolo automatico durante pan/zoom. Non garantisce presenza o commestibilità dei funghi. Il servizio pubblico Open-Meteo è soggetto ai suoi limiti e alle condizioni per uso non commerciale; non richiede MapTiler key.
+
+Formula, richieste, cache, privacy e limiti: [docs/MYCOSCORE_V2.md](docs/MYCOSCORE_V2.md). Il motore meteo [v1](docs/MYCOSCORE_V1.md) resta la base; GPS, tracce, fotografie e database delle uscite sono indipendenti.

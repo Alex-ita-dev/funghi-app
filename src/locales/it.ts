@@ -626,4 +626,30 @@ export default {
   "myco.factor.postRain": "Tempo dalla pioggia",
   "myco.factor.drying": "Essiccamento",
   "myco.factor.humidity": "Umidità dell’aria",
+  "heat.title": "Mostra mappa condizioni",
+  "heat.analyze": "Analizza questa zona",
+  "heat.refresh": "Aggiorna analisi",
+  "heat.cancel": "Annulla",
+  "heat.area": "Area {{km}} × {{km}} km · {{n}} zone",
+  "heat.zoom":
+    "Avvicinati alla zona da analizzare. Analisi non disponibile vicino ai poli o all’antimeridiano.",
+  "heat.progress": "Analisi condizioni… {{n}} / {{total}} zone analizzate",
+  "heat.offline": "Serve una connessione per analizzare una nuova area.",
+  "heat.moved":
+    "Zona o profilo cambiati. La mappa mostra ancora l’analisi precedente: aggiorna quando vuoi.",
+  "heat.legend": "Legenda MycoScore",
+  "heat.opacity": "Opacità",
+  "heat.cells": "Zone e punteggi (accesso da tastiera)",
+  "heat.resolution":
+    "Meteo condiviso tra celle vicine; DEM Copernicus di circa 90 m. Le celle non rappresentano misure locali né presenza certa di funghi.",
+  "heat.partial":
+    "Analisi parziale: alcune celle o dati del terreno non sono disponibili. Grigio = dati insufficienti.",
+  "heat.flat": "Esposizione non significativa: terreno quasi pianeggiante.",
+  "heat.formula":
+    "Euristica v2, non validata biologicamente. Il meteo della v1 mantiene l’87–90% del peso; terreno e stagione hanno un contributo secondario. I pesi dei dati assenti vengono esclusi e rinormalizzati.",
+  "heat.privacy":
+    "L’analisi invia solo le coordinate della griglia a Open-Meteo.",
+  "myco.factor.slope": "Pendenza",
+  "myco.factor.aspect": "Esposizione ed essiccamento",
+  "myco.factor.season": "Stagione (euristica)",
 } as const;

@@ -623,4 +623,29 @@ export default {
   "myco.factor.postRain": "Time since rain",
   "myco.factor.drying": "Drying",
   "myco.factor.humidity": "Air humidity",
+  "heat.title": "Show conditions map",
+  "heat.analyze": "Analyze this area",
+  "heat.refresh": "Update analysis",
+  "heat.cancel": "Cancel",
+  "heat.area": "Area {{km}} × {{km}} km · {{n}} zones",
+  "heat.zoom":
+    "Zoom in on the area to analyze. Unavailable near the poles or the date line.",
+  "heat.progress": "Analyzing conditions… {{n}} / {{total}} zones analyzed",
+  "heat.offline": "A connection is needed to analyze a new area.",
+  "heat.moved":
+    "Area or profile changed. The map still shows the previous analysis; update when ready.",
+  "heat.legend": "MycoScore legend",
+  "heat.opacity": "Opacity",
+  "heat.cells": "Zones and scores (keyboard access)",
+  "heat.resolution":
+    "Nearby cells share weather; Copernicus DEM is about 90 m. Cells are not local measurements or certain mushroom presence.",
+  "heat.partial":
+    "Partial analysis: some cells or terrain data are unavailable. Gray = insufficient data.",
+  "heat.flat": "Aspect is not meaningful on nearly flat ground.",
+  "heat.formula":
+    "V2 heuristic, not biologically validated. V1 weather retains 87–90% of the weight; terrain and season are secondary. Missing data weights are excluded and renormalized.",
+  "heat.privacy": "Analysis sends only grid coordinates to Open-Meteo.",
+  "myco.factor.slope": "Slope",
+  "myco.factor.aspect": "Aspect and drying",
+  "myco.factor.season": "Season (heuristic)",
 } satisfies Record<keyof typeof it, string>;
