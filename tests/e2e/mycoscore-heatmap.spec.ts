@@ -38,7 +38,7 @@ test("explicit batched heatmap, cell detail, cached offline reload and journal i
   expect(calls).toBe(0);
   await controls.getByRole("button", { name: "Analizza questa zona" }).click();
   await expect(page.locator(".leaflet-mycoHeat-pane canvas")).toBeVisible();
-  await expect(controls.getByText(/Porcini · Aggiornato:/)).toBeVisible();
+  await expect(controls.getByText(/Porcini · Dati recuperati:/)).toBeVisible();
   expect(calls).toBeLessThanOrEqual(6);
   const count = calls;
   await page.getByLabel("Mappa interattiva").scrollIntoViewIfNeeded();
@@ -101,9 +101,12 @@ test("cancel leaves map stable and no late overlay; pan and zoom never trigger a
   await page.goto("/");
   const before = await readRecord(page, "main");
   let calls = 0;
+  let release: (() => void) | undefined;
   await page.route("https://api.open-meteo.com/**", async (route) => {
     calls++;
-    await new Promise((r) => setTimeout(r, 500));
+    await new Promise<void>((r) => {
+      release = r;
+    });
     await route.abort();
   });
   await page.getByRole("button", { name: "MycoScore", exact: true }).click();
@@ -117,7 +120,9 @@ test("cancel leaves map stable and no late overlay; pan and zoom never trigger a
   await expect(
     controls.getByRole("button", { name: "Annulla", exact: true }),
   ).toBeVisible();
+  await expect.poll(() => calls).toBe(1);
   await controls.getByRole("button", { name: "Annulla", exact: true }).click();
+  release?.();
   await expect(
     controls.getByRole("button", { name: "Analizza questa zona" }),
   ).toBeEnabled();

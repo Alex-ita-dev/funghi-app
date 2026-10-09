@@ -448,3 +448,59 @@ it("expired weather is refreshed while static terrain survives; terrain TTL/limi
   expect(TERRAIN_LIMIT).toBe(4096);
   expect(TERRAIN_TTL).toBe(180 * day);
 });
+
+it("cancels during terrain batches without launching remaining batches or publishing area", async () => {
+  const { analyzeArea, cachedArea } =
+    await import("../src/services/mycoAnalysis");
+  const original = api();
+  let release: () => void = () => {};
+  const pending = new Promise<void>((r) => (release = r));
+  let terrainCalls = 0;
+  vi.stubGlobal(
+    "fetch",
+    vi.fn(async (input: string) => {
+      if (input.includes("/elevation?")) {
+        terrainCalls++;
+        await pending;
+      }
+      return original(input);
+    }),
+  );
+  const grid = createGrid({ ...point, zoom: 15 })!,
+    controller = new AbortController();
+  const task = analyzeArea(grid, "generic", controller.signal, undefined, now);
+  await vi.waitFor(() => expect(terrainCalls).toBe(2));
+  controller.abort();
+  release();
+  await expect(task).rejects.toMatchObject({ name: "AbortError" });
+  expect(terrainCalls).toBe(2);
+  expect(cachedArea(grid, "generic", now)).toBeNull();
+});
+it("HTTP, malformed JSON and batch length failures remain recoverable without NaN", async () => {
+  const { analyzeArea } = await import("../src/services/mycoAnalysis");
+  const grid = createGrid({ ...point, zoom: 13 })!;
+  for (const response of [
+    { ok: false, json: async () => ({}) },
+    {
+      ok: true,
+      json: async () => {
+        throw new SyntaxError("JSON");
+      },
+    },
+    { ok: true, json: async () => [weather()] },
+  ]) {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => response),
+    );
+    await expect(
+      analyzeArea(
+        grid,
+        "generic",
+        new AbortController().signal,
+        undefined,
+        now,
+      ),
+    ).rejects.toThrow("myco.error");
+  }
+});

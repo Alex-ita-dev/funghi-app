@@ -234,7 +234,7 @@ export function MycoScoreCard({
                 {computed.factors.map((f) => (
                   <div key={f.id}>
                     <dt>
-                      {tr(`myco.factor.${f.id}`)} ({n(f.weight, 0)}%)
+                      {tr(`myco.factor.${f.id}`)} ({n(f.weight, 2)}%)
                     </dt>
                     <dd>
                       {f.score === null
