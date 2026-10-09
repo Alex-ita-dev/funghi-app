@@ -630,4 +630,32 @@ export default {
   "myco.factor.postRain": "Zeit seit Regen",
   "myco.factor.drying": "Austrocknung",
   "myco.factor.humidity": "Luftfeuchte",
+  "heat.title": "Bedingungskarte anzeigen",
+  "heat.analyze": "Dieses Gebiet analysieren",
+  "heat.refresh": "Analyse aktualisieren",
+  "heat.cancel": "Abbrechen",
+  "heat.area": "Gebiet {{km}} × {{km}} km · {{n}} Zellen",
+  "heat.zoom":
+    "Vergrößere das gewünschte Gebiet. Nahe den Polen oder der Datumsgrenze nicht verfügbar.",
+  "heat.progress":
+    "Bedingungen analysieren… {{n}} / {{total}} Zellen analysiert",
+  "heat.offline":
+    "Für die Analyse eines neuen Gebiets ist eine Verbindung nötig.",
+  "heat.moved":
+    "Gebiet oder Profil geändert. Die Karte zeigt die vorherige Analyse; aktualisiere bei Bedarf.",
+  "heat.legend": "MycoScore-Legende",
+  "heat.opacity": "Deckkraft",
+  "heat.cells": "Zellen und Werte (Tastaturzugriff)",
+  "heat.resolution":
+    "Benachbarte Zellen teilen Wetterdaten; Copernicus-DEM etwa 90 m. Zellen sind keine lokalen Messungen oder sicheren Pilzfunde.",
+  "heat.partial":
+    "Teilweise Analyse: Einige Zellen oder Geländedaten fehlen. Grau = unzureichende Daten.",
+  "heat.flat":
+    "Auf fast ebenem Gelände ist die Ausrichtung nicht aussagekräftig.",
+  "heat.formula":
+    "Biologisch nicht validierte V2-Heuristik. V1-Wetter behält 87–90 % Gewicht; Gelände und Saison sind nachrangig. Fehlende Gewichte werden ausgeschlossen und neu normiert.",
+  "heat.privacy": "Die Analyse sendet nur Rasterkoordinaten an Open-Meteo.",
+  "myco.factor.slope": "Neigung",
+  "myco.factor.aspect": "Ausrichtung und Austrocknung",
+  "myco.factor.season": "Saison (Heuristik)",
 } satisfies Record<keyof typeof it, string>;

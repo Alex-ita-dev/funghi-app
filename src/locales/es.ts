@@ -626,4 +626,30 @@ export default {
   "myco.factor.postRain": "Tiempo desde la lluvia",
   "myco.factor.drying": "Desecación",
   "myco.factor.humidity": "Humedad del aire",
+  "heat.title": "Mostrar mapa de condiciones",
+  "heat.analyze": "Analizar esta zona",
+  "heat.refresh": "Actualizar análisis",
+  "heat.cancel": "Cancelar",
+  "heat.area": "Área {{km}} × {{km}} km · {{n}} zonas",
+  "heat.zoom":
+    "Acércate a la zona que deseas analizar. No disponible cerca de los polos o del antimeridiano.",
+  "heat.progress": "Analizando condiciones… {{n}} / {{total}} zonas analizadas",
+  "heat.offline": "Se necesita conexión para analizar una nueva zona.",
+  "heat.moved":
+    "Zona o perfil cambiado. El mapa conserva el análisis anterior; actualiza cuando quieras.",
+  "heat.legend": "Leyenda MycoScore",
+  "heat.opacity": "Opacidad",
+  "heat.cells": "Zonas y puntuaciones (acceso por teclado)",
+  "heat.resolution":
+    "Las celdas cercanas comparten datos meteorológicos; DEM Copernicus de unos 90 m. No son medidas locales ni presencia segura de hongos.",
+  "heat.partial":
+    "Análisis parcial: faltan algunas celdas o datos del terreno. Gris = datos insuficientes.",
+  "heat.flat": "La orientación no es significativa en terreno casi llano.",
+  "heat.formula":
+    "Heurística v2 sin validación biológica. El tiempo v1 conserva el 87–90 % del peso; terreno y estación son secundarios. Los pesos ausentes se excluyen y renormalizan.",
+  "heat.privacy":
+    "El análisis envía solo las coordenadas de la cuadrícula a Open-Meteo.",
+  "myco.factor.slope": "Pendiente",
+  "myco.factor.aspect": "Orientación y secado",
+  "myco.factor.season": "Estación (heurística)",
 } satisfies Record<keyof typeof it, string>;

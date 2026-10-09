@@ -626,4 +626,30 @@ export default {
   "myco.factor.postRain": "Tempo desde a chuva",
   "myco.factor.drying": "Secagem",
   "myco.factor.humidity": "Humidade do ar",
+  "heat.title": "Mostrar mapa de condições",
+  "heat.analyze": "Analisar esta área",
+  "heat.refresh": "Atualizar análise",
+  "heat.cancel": "Cancelar",
+  "heat.area": "Área {{km}} × {{km}} km · {{n}} zonas",
+  "heat.zoom":
+    "Aproxime a área a analisar. Indisponível perto dos polos ou do antimeridiano.",
+  "heat.progress": "Analisando condições… {{n}} / {{total}} zonas analisadas",
+  "heat.offline": "É necessária uma conexão para analisar uma nova área.",
+  "heat.moved":
+    "Área ou perfil alterado. O mapa mantém a análise anterior; atualize quando quiser.",
+  "heat.legend": "Legenda MycoScore",
+  "heat.opacity": "Opacidade",
+  "heat.cells": "Zonas e pontuações (acesso por teclado)",
+  "heat.resolution":
+    "Células próximas compartilham meteorologia; DEM Copernicus de cerca de 90 m. Não são medições locais nem presença garantida de cogumelos.",
+  "heat.partial":
+    "Análise parcial: algumas células ou dados do terreno estão indisponíveis. Cinza = dados insuficientes.",
+  "heat.flat": "Exposição não significativa em terreno quase plano.",
+  "heat.formula":
+    "Heurística v2 sem validação biológica. O tempo v1 mantém 87–90% do peso; terreno e estação são secundários. Pesos ausentes são excluídos e renormalizados.",
+  "heat.privacy":
+    "A análise envia apenas as coordenadas da grade ao Open-Meteo.",
+  "myco.factor.slope": "Inclinação",
+  "myco.factor.aspect": "Exposição e secagem",
+  "myco.factor.season": "Estação (heurística)",
 } satisfies Record<keyof typeof it, string>;

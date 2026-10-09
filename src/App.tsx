@@ -1,3 +1,11 @@
+import { MycoAreaControls } from "./components/MycoAreaControls";
+import type { Viewport } from "./lib/mycoArea";
+import type { Profile } from "./lib/mycoScoreV2";
+import {
+  cellSample,
+  type AreaAnalysis,
+  type CellSample,
+} from "./services/mycoAnalysis";
 import { MycoScoreCard } from "./components/MycoScoreCard";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
@@ -141,6 +149,24 @@ function Journal() {
   const [online, setOnline] = useState(navigator.onLine);
   const [busy, setBusy] = useState(false);
   const [request, setRequest] = useState<MapViewRequest | null>(null);
+  const [mycoProfile, setMycoProfile] = useState<Profile>(() =>
+    settings.profile.favouriteSpecies.includes("boletus-edulis-group")
+      ? "porcini"
+      : "generic",
+  );
+  const [mycoViewport, setMycoViewport] = useState<Viewport | null>(null);
+  const [mycoArea, setMycoArea] = useState<AreaAnalysis | null>(null);
+  const [mycoShown, setMycoShown] = useState(false);
+  const [mycoOpacity, setMycoOpacity] = useState(0.35);
+  const [mycoSample, setMycoSample] = useState<CellSample | null>(null);
+  function openMycoCell(index: number) {
+    if (!mycoArea) return;
+    const sample = cellSample(mycoArea, index);
+    if (!sample) return;
+    setMycoSample(sample);
+    setMycoPoint(mycoArea.grid.cells[index].point);
+    setMycoCard(true);
+  }
   const [mycoMode, setMycoMode] = useState(false);
   const [mycoPoint, setMycoPoint] = useState<Coordinate | null>(null);
   const [mycoCard, setMycoCard] = useState(false);
@@ -832,6 +858,20 @@ function Journal() {
                   <small role="status">{tr("myco.pick")}</small>
                 )}
               </div>
+              {mycoMode && !pick && (
+                <MycoAreaControls
+                  viewport={mycoViewport}
+                  profile={mycoProfile}
+                  onProfile={setMycoProfile}
+                  area={mycoArea}
+                  onArea={setMycoArea}
+                  shown={mycoShown}
+                  onShown={setMycoShown}
+                  opacity={mycoOpacity}
+                  onOpacity={setMycoOpacity}
+                  onCell={openMycoCell}
+                />
+              )}
               <div className="map-stage">
                 <MapView
                   baseLayer={baseLayer}
@@ -849,6 +889,10 @@ function Journal() {
                   request={request}
                   picking={!!pick || mycoMode}
                   scorePoint={mycoMode && !pick ? mycoPoint : null}
+                  onViewport={setMycoViewport}
+                  area={mycoMode && !pick && mycoShown ? mycoArea : null}
+                  areaOpacity={mycoOpacity}
+                  onCell={openMycoCell}
                   onPick={(coordinate) => {
                     if (pick) {
                       setMycoMode(false);
@@ -856,6 +900,7 @@ function Journal() {
                       setMycoPoint(null);
                       onPick(coordinate);
                     } else if (mycoMode) {
+                      setMycoSample(null);
                       setMycoPoint(coordinate);
                       setMycoCard(true);
                     }
@@ -1766,7 +1811,12 @@ function Journal() {
         />
       )}
       {mycoMode && mycoPoint && mycoCard && !pick && (
-        <MycoScoreCard point={mycoPoint} onClose={() => setMycoCard(false)} />
+        <MycoScoreCard
+          point={mycoPoint}
+          sample={mycoSample}
+          initialProfile={mycoProfile}
+          onClose={() => setMycoCard(false)}
+        />
       )}
       {draft && (
         <FindForm

@@ -1,3 +1,4 @@
+import { environmentalJson } from "./mycoHttp";
 import { z } from "zod";
 import {
   environmentSchema,
@@ -181,4 +182,73 @@ export async function loadEnvironment(
     clearTimeout(timer);
     signal.removeEventListener("abort", abort);
   }
+}
+
+// At most nine spatial anchors. One provider batch, with independent cache/parse fallbacks.
+export async function loadEnvironments(
+  points: Coordinate[],
+  signal: AbortSignal,
+  now = Date.now(),
+) {
+  signal.throwIfAborted();
+  if (points.length > 9) throw new Error("myco.error");
+  type Result = Awaited<ReturnType<typeof loadEnvironment>>;
+  const output = new Map<string, Result>();
+  const missing = new Map<string, Coordinate>();
+  for (const p of points) {
+    const rounded = gridPoint(p),
+      cached = cachedEnvironment(rounded, now),
+      id = key(rounded);
+    if (cached)
+      output.set(id, {
+        data: cached,
+        cached: true,
+        stale: now - cached.fetchedAt >= CACHE_TTL,
+      });
+    if (!cached || now - cached.fetchedAt >= CACHE_TTL)
+      missing.set(id, rounded);
+  }
+  if (missing.size && navigator.onLine) {
+    const entries = [...missing.entries()];
+    const params = new URLSearchParams({
+      latitude: entries.map(([, p]) => p.lat).join(","),
+      longitude: entries.map(([, p]) => p.lng).join(","),
+      past_days: "30",
+      forecast_days: "0",
+      timezone: "GMT",
+      temperature_unit: "celsius",
+      precipitation_unit: "mm",
+      daily:
+        "rain_sum,showers_sum,temperature_2m_mean,temperature_2m_min,temperature_2m_max,et0_fao_evapotranspiration",
+      hourly:
+        "relative_humidity_2m,soil_temperature_6cm,soil_moisture_3_to_9cm",
+    });
+    try {
+      const raw = await environmentalJson(
+        `https://api.open-meteo.com/v1/forecast?${params}`,
+        signal,
+      );
+      const rows = Array.isArray(raw) ? raw : [raw];
+      // Never associate a truncated/misaligned batch with different coordinates.
+      if (rows.length !== entries.length) throw new Error("myco.error");
+      entries.forEach(([id, p], i) => {
+        try {
+          const data = parseEnvironment(rows[i], p, now);
+          if (
+            !data.days.some((d) =>
+              Object.entries(d).some(([k, v]) => k !== "date" && finite(v)),
+            )
+          )
+            return;
+          cacheEnvironment(data, now);
+          output.set(id, { data, cached: false, stale: false });
+        } catch {
+          /* one malformed location must not discard other locations */
+        }
+      });
+    } catch {
+      signal.throwIfAborted();
+    }
+  }
+  return points.map((p) => output.get(key(gridPoint(p))) ?? null);
 }
