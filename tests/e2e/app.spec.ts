@@ -228,7 +228,12 @@ test("backup import validation and round trip", async ({ page }) => {
 test("no horizontal overflow and app shell reopens offline", async ({
   page,
   context,
+  browserName,
 }) => {
+  test.skip(
+    browserName === "webkit",
+    "Playwright WebKit offline SW navigation bug: https://github.com/microsoft/playwright/issues/42775",
+  );
   await fakeGps(page);
   await page.goto("/");
   await expect(

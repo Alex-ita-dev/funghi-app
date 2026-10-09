@@ -1,5 +1,8 @@
 import { test, expect, type Page } from "@playwright/test";
 import { seedLegacy } from "./fixtures";
+// Tile interception must also work after reload; SW-owned fetches bypass page routes.
+// Offline shell/service worker coverage lives in app.spec and preferences.spec.
+test.use({ serviceWorkers: "block" });
 test.beforeEach(async ({ page }) => {
   await seedLegacy(page);
 });
