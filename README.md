@@ -94,3 +94,5 @@ Prima fase successiva: collaudo V2 web e configurazione provider. Poi Capacitor 
 Il nome MycoTrail è provvisorio ai fini del lancio: disponibilità del marchio e omonimie non sono ancora stati verificati.
 
 Ritrovamenti e foto locali: [schema, backup e limiti](docs/FINDING_PHOTOS_DETAILS.md).
+
+MycoScore puntuale: [formula, dati e limiti v1](docs/MYCOSCORE_V1.md).
