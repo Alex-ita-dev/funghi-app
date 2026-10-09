@@ -39,11 +39,22 @@ async function openPoint(page: Page) {
 }
 test("point score, explanation, units, cached reload and GPS journal isolation", async ({
   page,
-}) => {
+}, testInfo) => {
   await seedLegacy(page);
+  // A fixed geographic cell, rather than an incidental low-zoom screen pixel.
+  // WebKit may restore a different scroll/viewport offset after modal focus.
+  await page.evaluate(() =>
+    localStorage.setItem(
+      "mycotrail.map-viewport.v1",
+      JSON.stringify({ lat: 43.52, lng: 11.48, zoom: 16 }),
+    ),
+  );
   let calls = 0;
   await page.route("https://api.open-meteo.com/**", (route) => {
     calls++;
+    const url = new URL(route.request().url());
+    expect(url.searchParams.get("latitude")).toBe("43.52");
+    expect(url.searchParams.get("longitude")).toBe("11.48");
     return route.fulfill({ json: weather() });
   });
   await page.goto("/");
@@ -55,6 +66,10 @@ test("point score, explanation, units, cached reload and GPS journal isolation",
   ).toBeVisible();
   await expect(dialog.getByText("612 m", { exact: true })).toBeVisible();
   await expect(dialog.getByText("0,3 m³/m³", { exact: true })).toBeVisible();
+  await page.screenshot({ path: testInfo.outputPath("mycoscore-light.png") });
+  await page.evaluate(() => (document.documentElement.dataset.theme = "dark"));
+  await page.screenshot({ path: testInfo.outputPath("mycoscore-dark.png") });
+  await page.evaluate(() => (document.documentElement.dataset.theme = "light"));
   await dialog.getByLabel("Profilo sperimentale").selectOption("porcini");
   expect(calls).toBe(1);
   await dialog.getByRole("button", { name: "Chiudi", exact: true }).click();

@@ -2985,3 +2985,6 @@ textarea:focus-visible {
 .myco-note { padding:12px; border-left:3px solid var(--green); font-size:13px; }
 .myco-card small { line-height:1.5; }
 .myco-card summary { cursor:pointer; padding:10px 0; }
+.myco-card .field { display:grid; gap:8px; }
+.myco-card select { min-height:44px; width:100%; padding:10px 12px; font:inherit; font-size:16px; color:var(--ink); background:var(--surface, #fcfcf8); border:1px solid var(--line); border-radius:8px; }
+.myco-card button { min-height:44px; }
