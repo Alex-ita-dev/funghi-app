@@ -18,6 +18,7 @@ function db(): Promise<IDBDatabase> {
   if (!connection)
     connection = new Promise((resolve, reject) => {
       const request = indexedDB.open("mycotrail", 2);
+      let rejected = false;
       request.onupgradeneeded = () => {
         const database = request.result;
         if (!database.objectStoreNames.contains("data"))
@@ -32,15 +33,26 @@ function db(): Promise<IDBDatabase> {
           database.createObjectStore("photoThumbs");
       };
       request.onsuccess = () => {
+        if (rejected) {
+          request.result.close();
+          return;
+        }
         request.result.onversionchange = () => {
           request.result.close();
           connection = undefined;
         };
         resolve(request.result);
       };
-      request.onerror = () => reject(request.error);
-      request.onblocked = () =>
+      request.onerror = () => {
+        rejected = true;
+        connection = undefined;
+        reject(request.error);
+      };
+      request.onblocked = () => {
+        rejected = true;
+        connection = undefined;
         reject(new Error("Database occupato: chiudi le altre schede."));
+      };
     });
   return connection;
 }

@@ -86,7 +86,9 @@ export function useData() {
           }
           return ok;
         })
-        .catch(() => {
+        .catch((cause: unknown) => {
+          const error = cause as { name?: string; message?: string };
+          console.error("Local save failed:", error?.name, error?.message);
           if (revision.current === seq) setSaving(false);
           setError(
             "Salvataggio non riuscito: i nuovi dati sono solo in memoria. Esporta un backup prima di chiudere e libera spazio sul dispositivo.",

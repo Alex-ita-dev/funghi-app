@@ -718,7 +718,9 @@ function Journal() {
           {storageError && (
             <div className="banner error" role="alert">
               {tr(storageError)}
-              <button onClick={backup}>{tr("Esporta backup")}</button>
+              <button disabled={saving || busy} onClick={backup}>
+                {tr("Esporta backup")}
+              </button>
             </div>
           )}
           {!settings.onboardingCompleted && (
@@ -954,7 +956,11 @@ function Journal() {
                   {storageError && (
                     <p role="alert" className="inline-error">
                       {tr(storageError)}
-                      <button className="text-button" onClick={backup}>
+                      <button
+                        className="text-button"
+                        disabled={saving || busy}
+                        onClick={backup}
+                      >
                         {" "}
                         {tr("Esporta backup")}{" "}
                       </button>
@@ -1536,12 +1542,16 @@ function Journal() {
                       "Se cancelli i dati del sito o cambi dispositivo, puoi perderli. Esporta periodicamente un backup.",
                     )}{" "}
                   </p>
-                  <button className="button primary" onClick={backup}>
+                  <button
+                    className="button primary"
+                    disabled={saving || busy}
+                    onClick={backup}
+                  >
                     <ArrowDownToLine size={17} /> {tr("Esporta backup")}{" "}
                   </button>
                   <button
                     className="button secondary"
-                    disabled={!!active}
+                    disabled={!!active || saving || busy}
                     onClick={() => importRef.current?.click()}
                   >
                     <ArrowUpFromLine size={17} /> {tr("Importa backup")}{" "}

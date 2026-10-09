@@ -4,6 +4,9 @@ test.use({ serviceWorkers: "block" });
 test("finding photos survive reload, edit, backup restore and deletion", async ({
   page,
 }) => {
+  page.on("console", (message) => {
+    if (message.type() === "error") console.error(message.text());
+  });
   await seedLegacy(page);
   await page.route(
     /https:\/\/(.*tile\.opentopomap\.org|tile\.openstreetmap\.org|api\.maptiler\.com)\/.*/,
@@ -71,7 +74,7 @@ test("finding photos survive reload, edit, backup restore and deletion", async (
         ? "Navigazione mobile"
         : "Navigazione principale",
   });
-  await nav.getByRole("button", { name: "I miei punti", exact: true }).click();
+  await nav.getByRole("button", { name: /^I miei punti/ }).click();
   await page.getByRole("button", { name: "Apri sulla mappa" }).click();
   await expect(
     dialog.getByRole("img", { name: "Foto del ritrovamento" }),
@@ -110,7 +113,7 @@ test("finding photos survive reload, edit, backup restore and deletion", async (
     .getByRole("button", { name: "Esporta backup", exact: true })
     .click();
   const file = await (await download).path();
-  await nav.getByRole("button", { name: "I miei punti", exact: true }).click();
+  await nav.getByRole("button", { name: /^I miei punti/ }).click();
   await page.getByRole("button", { name: "Apri sulla mappa" }).click();
   await dialog.getByRole("button", { name: "Elimina", exact: true }).click();
   await dialog
@@ -127,7 +130,7 @@ test("finding photos survive reload, edit, backup restore and deletion", async (
   await expect.poll(async () => (await inspect()).meta.length).toBe(1);
   expect((await readRecord(page, "main")).finds[0]).toEqual(updated);
   await page.reload();
-  await nav.getByRole("button", { name: "I miei punti", exact: true }).click();
+  await nav.getByRole("button", { name: /^I miei punti/ }).click();
   await page.getByRole("button", { name: "Apri sulla mappa" }).click();
   await expect(
     dialog.getByRole("img", { name: "Foto del ritrovamento" }),

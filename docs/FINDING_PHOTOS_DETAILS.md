@@ -28,7 +28,7 @@ Import accetta V1 senza foto e V2 con foto; valida schema, relazioni, ID univoci
 
 ## Verifica
 
-Typecheck, build e 60 test unit/component superati localmente. Coperti schema legacy, upgrade reale DB V1, CRUD Blob, rollback su riferimenti mancanti, backup V1/V2 e ripristino, filtri/storico e unità peso. Test GPS/preferenze precedenti mantenuti.
+Typecheck, build e 63 test unit/component superati localmente. Coperti schema legacy, upgrade reale DB V1, CRUD Blob, rollback su riferimenti mancanti, backup V1/V2 e ripristino, filtri/storico e unità peso. Test GPS/preferenze precedenti mantenuti.
 
 E2E aggiunto sui tre browser configurati: immagine 2400 px ridimensionata, due foto, riapertura, visualizzatore, modifica e promozione principale, eliminazione, backup/ripristino e riapertura. Consultare il check GitHub della PR per il risultato effettivo; i browser locali non sono disponibili nell'ambiente. Restano i due casi offline WebKit esclusi nel blocco precedente (bug Playwright #42775). Test reali di fotocamera/HEIC, quota del sensore e spazio disponibile richiedono iPhone/Android fisici.
 
