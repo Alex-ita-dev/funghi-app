@@ -69,7 +69,7 @@ beforeEach(async () => {
   // Keep the connection alive but reset only test records between cases.
   await storage.readSettings(["it-IT"]);
   await new Promise<void>((resolve, reject) => {
-    const r = indexedDB.open("mycotrail", 1);
+    const r = indexedDB.open("mycotrail");
     r.onsuccess = () => {
       const tx = r.result.transaction("data", "readwrite");
       tx.objectStore("data").delete("main");
@@ -401,7 +401,7 @@ describe("React settings and onboarding", () => {
     };
     await storage.writeData(data);
     await new Promise<void>((resolve) => {
-      const r = indexedDB.open("mycotrail", 1);
+      const r = indexedDB.open("mycotrail");
       r.onsuccess = () => {
         const tx = r.result.transaction("data", "readwrite");
         tx.objectStore("data").delete("settings");

@@ -1,3 +1,4 @@
+import type { PhotoChange } from "../lib/photos";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { type AppData } from "../lib/model";
 import { readData, writeData } from "../lib/storage";
@@ -51,29 +52,51 @@ export function useData() {
       unlock?.();
     };
   }, []);
-  const update = useCallback((change: (old: AppData) => AppData) => {
-    if (!ref.current) return;
-    const next = change(ref.current);
-    if (next === ref.current) return;
-    const snapshot = { ...next, savedAt: Date.now() };
-    ref.current = snapshot;
-    setData(snapshot);
-    setSaving(true);
-    const seq = ++revision.current;
-    tail.current = tail.current
-      .then(() => writeData(snapshot))
-      .then(() => {
-        if (revision.current === seq) {
-          setSaving(false);
-          setError("");
-        }
-      })
-      .catch(() => {
-        setSaving(false);
-        setError(
-          "Salvataggio non riuscito: i nuovi dati sono solo in memoria. Esporta un backup prima di chiudere e libera spazio sul dispositivo.",
-        );
-      });
-  }, []);
+  const update = useCallback(
+    (
+      change: (old: AppData) => AppData,
+      photos?: PhotoChange,
+    ): Promise<boolean> => {
+      if (!ref.current) return Promise.resolve(false);
+      const seq = ++revision.current;
+      setSaving(true);
+      const operation = tail.current
+        .then(async () => {
+          const next = change(ref.current!);
+          if (next === ref.current && !photos) return true;
+          const snapshot = { ...next, savedAt: Date.now() };
+          // Photo edits/imports become visible only after the atomic transaction commits.
+          // Evaluate queued changes against the latest state so a GPS fix cannot
+          // overwrite a concurrently saved finding or restored journal.
+          if (!photos) {
+            ref.current = snapshot;
+            setData(snapshot);
+          }
+          await writeData(snapshot, photos);
+          if (photos) {
+            ref.current = snapshot;
+            setData(snapshot);
+          }
+          return true;
+        })
+        .then((ok) => {
+          if (revision.current === seq) {
+            setSaving(false);
+            setError("");
+          }
+          return ok;
+        })
+        .catch(() => {
+          if (revision.current === seq) setSaving(false);
+          setError(
+            "Salvataggio non riuscito: i nuovi dati sono solo in memoria. Esporta un backup prima di chiudere e libera spazio sul dispositivo.",
+          );
+          return false;
+        });
+      tail.current = operation.then(() => {});
+      return operation;
+    },
+    [],
+  );
   return { data, update, error, saving, locked };
 }

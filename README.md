@@ -92,3 +92,5 @@ Riferimenti: [Leaflet](https://leafletjs.com/reference.html), [policy tile OSM](
 Prima fase successiva: collaudo V2 web e configurazione provider. Poi Capacitor con adattatore nativo per GPS, permessi e background; l'interfaccia React e la logica delle tracce sono riutilizzabili. Login, backend e Squad restano esclusi da questa fase.
 
 Il nome MycoTrail è provvisorio ai fini del lancio: disponibilità del marchio e omonimie non sono ancora stati verificati.
+
+Ritrovamenti e foto locali: [schema, backup e limiti](docs/FINDING_PHOTOS_DETAILS.md).

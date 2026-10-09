@@ -47,7 +47,7 @@ async function record(
   remove = false,
 ): Promise<unknown> {
   return new Promise((resolve, reject) => {
-    const open = indexedDB.open("mycotrail", 1);
+    const open = indexedDB.open("mycotrail");
     open.onupgradeneeded = () => open.result.createObjectStore("data");
     open.onsuccess = () => {
       const db = open.result;
