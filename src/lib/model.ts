@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { habitats, soils, aspects } from "./findings";
 
 export const coordinateSchema = z.object({
   lat: z.number().min(-90).max(90),
@@ -16,12 +17,19 @@ const carSchema = coordinateSchema.extend({
 const pointSchema = fixSchema.extend({
   segment: z.number().int().nonnegative(),
 });
-const findSchema = coordinateSchema.extend({
+export const findSchema = coordinateSchema.extend({
   id: z.string().min(1).max(100),
   kind: z.enum(["find", "spot"]),
   title: z.string().min(1).max(80),
   notes: z.string().max(1000),
   createdAt: time,
+  quantity: z.number().int().nonnegative().max(1000000).optional(),
+  weightKg: z.number().nonnegative().max(100000).optional(),
+  habitats: z.array(z.enum(habitats)).max(8).optional(),
+  soil: z.enum(soils).optional(),
+  aspect: z.enum(aspects).optional(),
+  altitudeM: z.number().min(-12000).max(100000).optional(),
+  spotId: z.string().min(1).max(100).optional(),
   source: z.enum(["gps", "map"]),
   accuracy: z.number().nonnegative().nullable(),
 });
@@ -51,6 +59,17 @@ export const dataSchema = z
     for (const rows of [data.trips, data.finds])
       if (new Set(rows.map((x) => x.id)).size !== rows.length)
         ctx.addIssue({ code: "custom", message: "ID duplicati" });
+    for (const f of data.finds) {
+      if (
+        f.spotId &&
+        (f.kind !== "find" ||
+          !data.finds.some((s) => s.id === f.spotId && s.kind === "spot"))
+      )
+        ctx.addIssue({
+          code: "custom",
+          message: "Fungaia associata non valida",
+        });
+    }
     for (const trip of data.trips) {
       if ((trip.status === "active") !== (trip.resumedAt !== null))
         ctx.addIssue({ code: "custom", message: "Stato uscita incoerente" });

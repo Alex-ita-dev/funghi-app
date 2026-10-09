@@ -1,5 +1,5 @@
 import { usePreferences } from "../hooks/usePreferences";
-import { useEffect, useRef, type ReactNode } from "react";
+import { useEffect, useRef, useId, type ReactNode } from "react";
 import { X } from "lucide-react";
 export function Modal({
   title,
@@ -11,6 +11,7 @@ export function Modal({
   onClose: () => void;
 }) {
   const { tr } = usePreferences();
+  const titleId = useId();
   const ref = useRef<HTMLDialogElement>(null);
   useEffect(() => {
     const el = ref.current!;
@@ -28,11 +29,11 @@ export function Modal({
       onClick={(e) => {
         if (e.target === ref.current) onClose();
       }}
-      aria-labelledby="modal-title"
+      aria-labelledby={titleId}
     >
       <div className="modal-inner">
         <header>
-          <h2 id="modal-title">{title}</h2>
+          <h2 id={titleId}>{title}</h2>
           <button
             className="icon-button"
             aria-label={tr("Chiudi")}

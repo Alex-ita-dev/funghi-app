@@ -68,7 +68,7 @@ async function database(page: Page) {
   return page.evaluate(
     async () =>
       new Promise<any>((resolve, reject) => {
-        const request = indexedDB.open("mycotrail", 1);
+        const request = indexedDB.open("mycotrail");
         request.onsuccess = () => {
           const db = request.result;
           const read = db.transaction("data").objectStore("data").get("main");
@@ -155,6 +155,7 @@ test("manual finding survives reload, can be edited and deleted when GPS is deni
     .getByLabel("Mappa interattiva")
     .click({ position: { x: 110, y: 160 } });
   await page.getByLabel("Nome del punto").fill("Castagno grande");
+  await page.getByText("Aggiungi dettagli", { exact: true }).click();
   await page.getByLabel("Le tue note").fill("<img src=x onerror=alert(1)>");
   await page.getByRole("button", { name: "Fungaia", exact: true }).click();
   await page.getByRole("button", { name: "Salva punto" }).click();

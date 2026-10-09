@@ -37,7 +37,7 @@ export async function readRecord(page: Page, key: "main" | "settings") {
   return page.evaluate(
     (key) =>
       new Promise<any>((resolve, reject) => {
-        const open = indexedDB.open("mycotrail", 1);
+        const open = indexedDB.open("mycotrail");
         open.onsuccess = () => {
           const db = open.result;
           const r = db.transaction("data").objectStore("data").get(key);

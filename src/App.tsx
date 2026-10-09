@@ -1,10 +1,4 @@
-import {
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
-  type FormEvent,
-} from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   ArrowDownToLine,
   ArrowLeft,
@@ -62,7 +56,6 @@ import {
   duration,
   openTrip,
   pauseTrip,
-  recoverData,
   resumeTrip,
   segments,
   toGpx,
@@ -73,15 +66,16 @@ import {
   type Fix,
   type Trip,
 } from "./lib/model";
-import { download } from "./lib/storage";
+import { download, readPhotoMeta } from "./lib/storage";
+import { FindForm, type FindingDraft } from "./components/FindForm";
+import { FindingDetails, FindingSummary } from "./components/FindingDetails";
+import { PhotoImage } from "./components/FindingPhotos";
+import type { PhotoMeta } from "./lib/photos";
+import { exportBackup, parseBackup, MAX_BACKUP_BYTES } from "./lib/backup";
+import { filterFindings, habitats, habitatLabels } from "./lib/findings";
 
 type Page = "map" | "finds" | "trips" | "settings";
-type Draft = {
-  coordinate: Coordinate;
-  source: "gps" | "map";
-  accuracy: number | null;
-  find?: Find;
-};
+type Draft = FindingDraft;
 type Confirm = {
   title: string;
   text: string;
@@ -170,6 +164,24 @@ function Journal() {
   const [selectedTrip, setSelectedTrip] = useState<string | null>(null);
   const [query, setQuery] = useState("");
   const [filter, setFilter] = useState<"all" | "find" | "spot">("all");
+  const [photoMeta, setPhotoMeta] = useState<PhotoMeta[]>([]);
+  const [dateFrom, setDateFrom] = useState("");
+  const [dateTo, setDateTo] = useState("");
+  const [withPhotos, setWithPhotos] = useState(false);
+  const [habitatFilter, setHabitatFilter] = useState("");
+  useEffect(() => {
+    let alive = true;
+    void readPhotoMeta()
+      .then((rows) => {
+        if (alive) setPhotoMeta(rows);
+      })
+      .catch(() => {
+        if (alive) setNotice("Impossibile leggere le foto. Riapri la scheda.");
+      });
+    return () => {
+      alive = false;
+    };
+  }, [data?.finds]);
   const importRef = useRef<HTMLInputElement>(null);
   const initializedView = useRef(false);
   const handleFix = useCallback(
@@ -335,7 +347,7 @@ function Journal() {
     setPage("map");
     if (bounds.length) setRequest({ id: Date.now(), bounds });
   };
-  async function withFix(action: (fix: Fix) => void) {
+  async function withFix(action: (fix: Fix, altitudeM?: number) => void) {
     setBusy(true);
     try {
       const fix = await gps.locate();
@@ -348,12 +360,19 @@ function Journal() {
         );
         return;
       }
-      action({
-        lat: fix.lat,
-        lng: fix.lng,
-        accuracy: fix.accuracy,
-        timestamp: fix.timestamp,
-      });
+      action(
+        {
+          lat: fix.lat,
+          lng: fix.lng,
+          accuracy: fix.accuracy,
+          timestamp: fix.timestamp,
+        },
+        fix.altitude !== null &&
+          fix.altitude >= -12000 &&
+          fix.altitude <= 100000
+          ? fix.altitude
+          : undefined,
+      );
     } catch (error) {
       setNotice((error as Error).message);
     } finally {
@@ -451,9 +470,15 @@ function Journal() {
       setPick(kind);
       return;
     }
-    void withFix((fix) => {
+    void withFix((fix, altitudeM) => {
       if (kind === "car") saveCar(fix, fix.accuracy);
-      else setDraft({ coordinate: fix, source: "gps", accuracy: fix.accuracy });
+      else
+        setDraft({
+          coordinate: fix,
+          source: "gps",
+          accuracy: fix.accuracy,
+          altitudeM,
+        });
     });
   }
   function onPick(coordinate: Coordinate) {
@@ -479,40 +504,50 @@ function Journal() {
     setReturning(true);
     fit(trip, target);
   }
-  function backup() {
-    if (data)
+  async function backup() {
+    if (!data || saving || busy) return;
+    setBusy(true);
+    try {
       download(
-        JSON.stringify(data, null, 2),
+        await exportBackup(data),
         `mycotrail-backup-${new Date().toISOString().slice(0, 10)}.json`,
         "application/json",
       );
+    } catch (e) {
+      setNotice(tr((e as Error).message));
+    } finally {
+      setBusy(false);
+    }
   }
   async function importBackup(file?: File) {
-    if (!file) return;
+    if (!file || saving || busy || active) return;
     try {
-      if (file.size > 25 * 1024 * 1024)
-        throw new Error(tr("Il file supera 25 MB."));
-      const imported = recoverData(JSON.parse(await file.text()));
+      if (file.size > MAX_BACKUP_BYTES) throw new Error("Backup too large");
+      const imported = parseBackup(await file.text());
       setConfirm({
         title: tr("Ripristina il backup?"),
         text: tr(
-          "Contiene {{places}} punti e {{outings}} uscite. Sostituirà i dati presenti su questo dispositivo: esporta prima un backup se vuoi conservarli.",
-          { places: imported.finds.length, outings: imported.trips.length },
+          "Il backup sostituirà punti, foto e uscite. Esporta prima i dati attuali.",
         ),
         label: tr("Ripristina dati"),
         action: () => {
-          update(() => imported);
-          setSelectedTrip(null);
-          setReturning(false);
-          setNotice(tr("Backup ripristinato. Le uscite aperte sono in pausa."));
+          if (recording || saving) return;
+          setBusy(true);
+          void update(() => imported.data, { replaceAll: imported.photos })
+            .then((ok) => {
+              if (ok) {
+                setSelectedTrip(null);
+                setReturning(false);
+                setNotice(
+                  tr("Backup ripristinato. Le uscite aperte sono in pausa."),
+                );
+              } else setNotice(tr("Ripristino non riuscito. Riprova."));
+            })
+            .finally(() => setBusy(false));
         },
       });
     } catch {
-      setNotice(
-        tr(
-          "Backup non valido o troppo grande. Scegli un file JSON esportato da MycoTrail (massimo 25 MB).",
-        ),
-      );
+      setNotice(tr("Backup non valido o troppo grande. Limite: 100 MB."));
     }
   }
 
@@ -542,10 +577,17 @@ function Journal() {
         )}
       </div>
     );
-  const shownFinds = data.finds.filter(
-    (f) =>
-      (filter === "all" || f.kind === filter) &&
-      `${f.title} ${f.notes}`.toLowerCase().includes(query.toLowerCase()),
+  const shownFinds = filterFindings(
+    data.finds,
+    {
+      query,
+      kind: filter,
+      from: dateFrom,
+      to: dateTo,
+      withPhotos,
+      habitat: habitatFilter,
+    },
+    new Set(photoMeta.map((p) => p.findingId)),
   );
   const totalDistance = data.trips.reduce(
     (total, t) => total + trackDistance(t),
@@ -676,7 +718,9 @@ function Journal() {
           {storageError && (
             <div className="banner error" role="alert">
               {tr(storageError)}
-              <button onClick={backup}>{tr("Esporta backup")}</button>
+              <button disabled={saving || busy} onClick={backup}>
+                {tr("Esporta backup")}
+              </button>
             </div>
           )}
           {!settings.onboardingCompleted && (
@@ -912,7 +956,11 @@ function Journal() {
                   {storageError && (
                     <p role="alert" className="inline-error">
                       {tr(storageError)}
-                      <button className="text-button" onClick={backup}>
+                      <button
+                        className="text-button"
+                        disabled={saving || busy}
+                        onClick={backup}
+                      >
                         {" "}
                         {tr("Esporta backup")}{" "}
                       </button>
@@ -1265,11 +1313,63 @@ function Journal() {
                   />
                 </label>
               </div>
+              <details className="finding-extra notebook-filters">
+                <summary>{tr("Altri filtri")}</summary>
+                <div className="field-pair">
+                  <label className="field">
+                    {tr("Dal")}
+                    <input
+                      type="date"
+                      value={dateFrom}
+                      onChange={(e) => setDateFrom(e.target.value)}
+                    />
+                  </label>
+                  <label className="field">
+                    {tr("Al")}
+                    <input
+                      type="date"
+                      value={dateTo}
+                      onChange={(e) => setDateTo(e.target.value)}
+                    />
+                  </label>
+                </div>
+                <label>
+                  <input
+                    type="checkbox"
+                    checked={withPhotos}
+                    onChange={(e) => setWithPhotos(e.target.checked)}
+                  />
+                  {tr("Con foto")}
+                </label>
+                <label className="field">
+                  {tr("Habitat")}
+                  <select
+                    value={habitatFilter}
+                    onChange={(e) => setHabitatFilter(e.target.value)}
+                  >
+                    <option value="">{tr("Tutti")}</option>
+                    {habitats.map((h) => (
+                      <option key={h} value={h}>
+                        {tr(habitatLabels[h])}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              </details>
               {shownFinds.length ? (
                 <div className="find-grid">
                   {shownFinds.map((f) => (
                     <article className="find-card" key={f.id}>
                       <div className={`find-card-top ${f.kind}`}>
+                        {photoMeta.find(
+                          (p) => p.findingId === f.id && p.primary,
+                        ) && (
+                          <PhotoImage
+                            photo={photoMeta.find(
+                              (p) => p.findingId === f.id && p.primary,
+                            )!}
+                          />
+                        )}
                         <span>
                           {f.kind === "spot" ? (
                             <Trees size={43} />
@@ -1286,6 +1386,7 @@ function Journal() {
                       <div className="find-card-content">
                         <small>{dateLabel(f.createdAt)}</small>
                         <h2>{f.title}</h2>
+                        <FindingSummary find={f} />
                         <p>{f.notes || tr("Un luogo da ricordare.")}</p>
                         <button
                           className="text-button"
@@ -1441,12 +1542,16 @@ function Journal() {
                       "Se cancelli i dati del sito o cambi dispositivo, puoi perderli. Esporta periodicamente un backup.",
                     )}{" "}
                   </p>
-                  <button className="button primary" onClick={backup}>
+                  <button
+                    className="button primary"
+                    disabled={saving || busy}
+                    onClick={backup}
+                  >
                     <ArrowDownToLine size={17} /> {tr("Esporta backup")}{" "}
                   </button>
                   <button
                     className="button secondary"
-                    disabled={!!active}
+                    disabled={!!active || saving || busy}
                     onClick={() => importRef.current?.click()}
                   >
                     <ArrowUpFromLine size={17} /> {tr("Importa backup")}{" "}
@@ -1624,24 +1729,35 @@ function Journal() {
         <FindForm
           draft={draft}
           onClose={() => setDraft(null)}
-          onSave={(find) => {
+          finds={data.finds}
+          onSave={async (find, photos) => {
             if (!draft.find && data.finds.length >= 10000) {
               setNotice(
                 tr(
                   "Limite di 10.000 punti raggiunto. Esporta un backup e libera il taccuino.",
                 ),
               );
-              return;
+              return false;
             }
-            update((old) => ({
-              ...old,
-              finds: draft.find
-                ? old.finds.map((f) => (f.id === find.id ? find : f))
-                : [find, ...old.finds],
-            }));
-            setDraft(null);
+            const ok = await update(
+              (old) => ({
+                ...old,
+                finds: draft.find
+                  ? old.finds.map((f) =>
+                      f.id === find.id
+                        ? find
+                        : f.spotId === find.id && find.kind !== "spot"
+                          ? { ...f, spotId: undefined }
+                          : f,
+                    )
+                  : [find, ...old.finds],
+              }),
+              { findingId: find.id, photos },
+            );
+            if (!ok) return false;
             center(find);
             setNotice(tr("Punto salvato nel tuo taccuino."));
+            return true;
           }}
         />
       )}
@@ -1651,6 +1767,22 @@ function Journal() {
             {detail.kind === "spot" ? tr("Fungaia") : tr("Ritrovamento")} ·{" "}
             {dateLabel(detail.createdAt)}
           </span>
+          <FindingDetails
+            find={detail}
+            finds={data.finds}
+            photos={photoMeta.filter((p) => p.findingId === detail.id)}
+            onOpen={setDetail}
+            onAdd={() => {
+              setDraft({
+                coordinate: detail,
+                source: "map",
+                accuracy: null,
+                altitudeM: detail.altitudeM,
+                spotId: detail.id,
+              });
+              setDetail(null);
+            }}
+          />
           <p className="detail-notes">
             {detail.notes || tr("Nessuna nota aggiunta.")}
           </p>
@@ -1691,14 +1823,18 @@ function Journal() {
                 setConfirm({
                   title: tr("Elimina questo punto?"),
                   text: tr(
-                    "Il ritrovamento sarà rimosso dal taccuino su questo dispositivo.",
+                    "Il punto e tutte le sue foto saranno eliminati. I ritrovamenti associati resteranno nel taccuino.",
                   ),
                   label: tr("Elimina punto"),
                   danger: true,
                   action: () =>
                     update((old) => ({
                       ...old,
-                      finds: old.finds.filter((f) => f.id !== id),
+                      finds: old.finds
+                        .filter((f) => f.id !== id)
+                        .map((f) =>
+                          f.spotId === id ? { ...f, spotId: undefined } : f,
+                        ),
                     })),
                 });
               }}
@@ -1811,102 +1947,5 @@ function Empty({
       <h2>{title}</h2>
       <p>{text}</p>
     </div>
-  );
-}
-function FindForm({
-  draft,
-  onClose,
-  onSave,
-}: {
-  draft: Draft;
-  onClose: () => void;
-  onSave: (find: Find) => void;
-}) {
-  const { tr } = usePreferences();
-  const [kind, setKind] = useState<"find" | "spot">(draft.find?.kind ?? "find");
-  const [title, setTitle] = useState(draft.find?.title ?? "");
-  const [notes, setNotes] = useState(draft.find?.notes ?? "");
-  function submit(e: FormEvent) {
-    e.preventDefault();
-    if (!title.trim()) return;
-    onSave({
-      id: draft.find?.id ?? crypto.randomUUID(),
-      lat: draft.coordinate.lat,
-      lng: draft.coordinate.lng,
-      kind,
-      title: title.trim(),
-      notes: notes.trim(),
-      source: draft.source,
-      accuracy: draft.accuracy,
-      createdAt: draft.find?.createdAt ?? Date.now(),
-    });
-  }
-  return (
-    <Modal
-      title={
-        draft.find ? tr("Modifica il tuo punto") : tr("Un posto da ricordare")
-      }
-      onClose={onClose}
-    >
-      <form onSubmit={submit}>
-        <div className="kind-toggle">
-          <button
-            type="button"
-            className={kind === "find" ? "selected" : ""}
-            onClick={() => setKind("find")}
-          >
-            <MapPin size={18} /> {tr("Ritrovamento")}{" "}
-          </button>
-          <button
-            type="button"
-            className={kind === "spot" ? "selected" : ""}
-            onClick={() => setKind("spot")}
-          >
-            <Star size={18} /> {tr("Fungaia")}{" "}
-          </button>
-        </div>
-        <label className="field">
-          {" "}
-          {tr("Nome del punto")}{" "}
-          <input
-            autoFocus
-            required
-            maxLength={80}
-            placeholder={
-              kind === "find"
-                ? tr("Es. Porcini sotto il castagno")
-                : tr("Es. La fungaia del sentiero alto")
-            }
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-          />
-        </label>
-        <label className="field">
-          {" "}
-          {tr("Le tue note")} <span>{tr("(facoltative)")}</span>
-          <textarea
-            maxLength={1000}
-            rows={4}
-            placeholder={tr("Alberi vicini, terreno, dettagli da ricordare…")}
-            value={notes}
-            onChange={(e) => setNotes(e.target.value)}
-          />
-        </label>
-        <div className="coordinate-box">
-          <MapPin size={17} />
-          {draft.coordinate.lat.toFixed(5)}, {draft.coordinate.lng.toFixed(5)}
-          <span className="coordinate-source">
-            {draft.source === "gps" ? "GPS" : tr("Mappa")}
-          </span>
-        </div>
-        <button
-          className="button primary full"
-          type="submit"
-          disabled={!title.trim()}
-        >
-          <Check size={18} /> {tr("Salva punto")}{" "}
-        </button>
-      </form>
-    </Modal>
   );
 }
