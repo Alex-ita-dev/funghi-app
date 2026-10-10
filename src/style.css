@@ -3073,3 +3073,8 @@ textarea:focus-visible {
   max-height: 240px;
   overflow: auto;
 }
+
+.ecology-details > summary { cursor: pointer; min-height: 44px; padding: 12px 0; font-weight: 700; }
+.ecology-details h3 { margin-top: 16px; }
+.ecology-details p, .ecology-details small { line-height: 1.5; }
+.ecology-sources { font-size: 12px; line-height: 1.6; overflow-wrap: anywhere; }

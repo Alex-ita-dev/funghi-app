@@ -1,8 +1,9 @@
-import { weather } from "./myco-fixtures";
+import { weather, mockLand } from "./myco-fixtures";
 import { test, expect, type Page } from "@playwright/test";
 import { seedLegacy, readRecord } from "./fixtures";
 test.use({ serviceWorkers: "block" });
 test.beforeEach(async ({ page }) => {
+  await mockLand(page);
   await page.route("https://api.open-meteo.com/v1/elevation?**", (route) => {
     const n = new URL(route.request().url()).searchParams
       .get("latitude")!
@@ -44,6 +45,11 @@ test("point score, explanation, units, cached reload and GPS journal isolation",
   await expect(
     dialog.getByText("Perché questo punteggio?", { exact: true }),
   ).toBeVisible();
+  await expect(dialog.locator(".ecology-details")).not.toHaveAttribute(
+    "open",
+    "",
+  );
+  await dialog.getByText("Mostra dettagli", { exact: true }).click();
   await expect(dialog.getByText("612 m", { exact: true })).toBeVisible();
   await expect(dialog.getByText("0,3 m³/m³", { exact: true })).toBeVisible();
   await page.screenshot({ path: testInfo.outputPath("mycoscore-light.png") });
@@ -107,10 +113,14 @@ test("point score, explanation, units, cached reload and GPS journal isolation",
   await page
     .getByLabel("Interactive map")
     .click({ position: { x: 130, y: 160 } });
+  await page
+    .getByRole("dialog")
+    .getByText("Show details", { exact: true })
+    .click();
   await expect(
     page.getByRole("dialog").getByText("60.8 °F", { exact: true }),
   ).toBeVisible();
-  await expect(page.getByRole("dialog").getByText(/ft$/)).toBeVisible();
+  await expect(page.getByRole("dialog").getByText(/ft$/).first()).toBeVisible();
   expect(calls).toBe(1);
 });
 test("offline without cache stays recoverable and does not modify existing data", async ({
@@ -154,6 +164,7 @@ test("missing soil remains absent while a partial score is shown", async ({
   await page.goto("/");
   const dialog = await openPoint(page);
   await expect(dialog.getByTestId("myco-score")).toContainText(/\d+ \/ 100/);
+  await dialog.getByText("Mostra dettagli", { exact: true }).click();
   await expect(
     dialog.getByText("Umidità a 3–9 cm", { exact: true }).locator(".."),
   ).toContainText("Non disponibile");

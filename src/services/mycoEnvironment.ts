@@ -108,6 +108,9 @@ export function parseEnvironment(
       min: read("temperature_2m_min", date, -100, 70),
       max: read("temperature_2m_max", date, -100, 70),
       et0: read("et0_fao_evapotranspiration", date, 0, 100),
+      vpd: mean("vapour_pressure_deficit", date, 0, 15),
+      wind: mean("wind_speed_10m", date, 0, 400),
+      radiation: read("shortwave_radiation_sum", date, 0, 60),
       humidity: mean("relative_humidity_2m", date, 0, 100),
       soil: mean("soil_temperature_6cm", date, -100, 80),
       moisture: mean("soil_moisture_3_to_9cm", date, 0, 1),
@@ -150,10 +153,11 @@ export async function loadEnvironment(
       timezone: "GMT",
       temperature_unit: "celsius",
       precipitation_unit: "mm",
+      wind_speed_unit: "kmh",
       daily:
-        "rain_sum,showers_sum,temperature_2m_mean,temperature_2m_min,temperature_2m_max,et0_fao_evapotranspiration",
+        "rain_sum,showers_sum,temperature_2m_mean,temperature_2m_min,temperature_2m_max,et0_fao_evapotranspiration,shortwave_radiation_sum",
       hourly:
-        "relative_humidity_2m,soil_temperature_6cm,soil_moisture_3_to_9cm",
+        "relative_humidity_2m,soil_temperature_6cm,soil_moisture_3_to_9cm,vapour_pressure_deficit,wind_speed_10m",
     });
     const response = await fetch(
       `https://api.open-meteo.com/v1/forecast?${params}`,
@@ -218,10 +222,11 @@ export async function loadEnvironments(
       timezone: "GMT",
       temperature_unit: "celsius",
       precipitation_unit: "mm",
+      wind_speed_unit: "kmh",
       daily:
-        "rain_sum,showers_sum,temperature_2m_mean,temperature_2m_min,temperature_2m_max,et0_fao_evapotranspiration",
+        "rain_sum,showers_sum,temperature_2m_mean,temperature_2m_min,temperature_2m_max,et0_fao_evapotranspiration,shortwave_radiation_sum",
       hourly:
-        "relative_humidity_2m,soil_temperature_6cm,soil_moisture_3_to_9cm",
+        "relative_humidity_2m,soil_temperature_6cm,soil_moisture_3_to_9cm,vapour_pressure_deficit,wind_speed_10m",
     });
     try {
       const raw = await environmentalJson(
