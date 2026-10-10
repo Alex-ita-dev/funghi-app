@@ -30,7 +30,7 @@ export function MycoScoreCard({
     const controller = new AbortController();
     setAnalysis(null);
     setError("");
-    void loadEcology(point, profile, controller.signal, sample)
+    void loadEcology(point, profile, controller.signal, attempt ? null : sample)
       .then((value) => {
         if (!controller.signal.aborted) setAnalysis(value);
       })

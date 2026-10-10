@@ -5,6 +5,7 @@ import type { EcologyProfileId as Profile } from "../lib/ecologyModel";
 import {
   analyzeArea,
   cachedArea,
+  changeAreaSpecies,
   type AreaAnalysis,
 } from "../services/mycoAnalysis";
 export function MycoAreaControls({
@@ -18,6 +19,7 @@ export function MycoAreaControls({
   opacity,
   onOpacity,
   onCell,
+  onClear,
 }: {
   viewport: Viewport | null;
   profile: Profile;
@@ -29,6 +31,7 @@ export function MycoAreaControls({
   opacity: number;
   onOpacity: (v: number) => void;
   onCell: (i: number) => void;
+  onClear: () => void;
 }) {
   const { tr, dateTime } = usePreferences();
   const [busy, setBusy] = useState(false),
@@ -46,14 +49,14 @@ export function MycoAreaControls({
   }
   function toggle() {
     if (shown) cancel();
-    else if (grid && !area && profile !== "chanterelles") {
+    else if (grid && !area) {
       const cached = cachedArea(grid, profile);
       if (cached) onArea(cached);
     }
     onShown(!shown);
   }
   async function analyze() {
-    if (!grid || profile === "chanterelles") return;
+    if (!grid) return;
     cancel();
     const current = new AbortController();
     controller.current = current;
@@ -90,7 +93,7 @@ export function MycoAreaControls({
             onChange={(e) => {
               const next = e.target.value as Profile;
               onProfile(next);
-              if (next === "chanterelles") onShown(false);
+              if (area) onArea(changeAreaSpecies(area, next));
             }}
           >
             <option value="generic">{tr("myco.generic")}</option>
@@ -101,13 +104,14 @@ export function MycoAreaControls({
         <button
           className="button secondary"
           aria-pressed={shown}
-          disabled={profile === "chanterelles"}
           onClick={toggle}
         >
-          {tr("heat.title")}
+          {tr(shown ? "heat.hide" : "heat.title")}
         </button>
       </div>
-      <small>{tr("eco.legacyMap")}</small>
+      <strong>
+        {tr("heat.mapTitle")} — {tr(`myco.${profile}`)}
+      </strong>
       {shown && (
         <>
           <div className="heat-actions">
@@ -116,7 +120,9 @@ export function MycoAreaControls({
               disabled={!grid || busy}
               onClick={() => void analyze()}
             >
-              {tr(area ? "heat.refresh" : "heat.analyze")}
+              {tr(
+                moved ? "heat.newArea" : area ? "heat.refresh" : "heat.analyze",
+              )}
             </button>
             {busy ? (
               <button className="button secondary" onClick={cancel}>
@@ -128,7 +134,7 @@ export function MycoAreaControls({
                   grid ? "heat.area" : "heat.zoom",
                   grid
                     ? {
-                        km: String(grid.widthM / 1000),
+                        km: String((grid.widthM / 1000) ** 2),
                         n: String(grid.cells.length),
                       }
                     : {},
@@ -151,18 +157,41 @@ export function MycoAreaControls({
           {moved && <small role="status">{tr("heat.moved")}</small>}
           {area && (
             <>
+              <small>
+                {tr("heat.analysis")}: {dateTime(Date.parse(area.analysisDate))}
+              </small>
               <p className="heat-stamp">
                 {tr(`myco.${area.profile}`)} ·{" "}
                 {tr(area.cached ? "myco.cached" : "myco.updated")}:{" "}
-                {dateTime(area.updatedAt)}
+                {dateTime(area.updatedAt)} ·{" "}
+                {tr("heat.age", {
+                  min: String(
+                    Math.max(
+                      0,
+                      Math.floor((Date.now() - area.updatedAt) / 60000),
+                    ),
+                  ),
+                })}
               </p>
               {area.environments.some((e) => e?.stale) && (
                 <small>{tr("myco.stale")}</small>
               )}
-              {area.cells.some(
-                (c) => c.score === null || c.terrain.slopeDegrees === null,
-              ) && <small role="status">{tr("heat.partial")}</small>}
-              <details>
+              {area.cells.some((c) => c.status === "insufficientData") && (
+                <small role="status">{tr("heat.partial")}</small>
+              )}
+              {area.cells.filter((c) => c.status === "insufficientData")
+                .length >
+                area.cells.length / 2 && (
+                <p role="alert">{tr("heat.quality")}</p>
+              )}
+              <button
+                className="button secondary"
+                disabled={busy}
+                onClick={onClear}
+              >
+                {tr("heat.clear")}
+              </button>
+              <details open>
                 <summary>{tr("heat.legend")}</summary>
                 <div className="heat-legend">
                   {["poor", "low", "fair", "good", "veryGood"].map((key, i) => (
@@ -172,19 +201,41 @@ export function MycoAreaControls({
                       {tr(`myco.class.${key}`)}
                     </span>
                   ))}
+                  <span>
+                    <i
+                      style={{
+                        background: "#475569",
+                        border: "2px dashed currentColor",
+                      }}
+                    />
+                    ▧ {tr("heat.unsuitable")}
+                  </span>
+                  <span>
+                    <i style={{ border: "2px dotted currentColor" }} />?{" "}
+                    {tr("heat.insufficient")}
+                  </span>
                 </div>
-                <label>
-                  {tr("heat.opacity")}{" "}
-                  <input
-                    type="range"
-                    min="0.15"
-                    max="0.65"
-                    step="0.05"
-                    value={opacity}
-                    onChange={(e) => onOpacity(Number(e.target.value))}
-                  />
-                </label>
-                <p>{tr("heat.resolution")}</p>
+                <details>
+                  <summary>{tr("heat.opacity")}</summary>
+                  <label>
+                    {tr("heat.opacity")}{" "}
+                    <input
+                      type="range"
+                      min="0.15"
+                      max="0.65"
+                      step="0.05"
+                      value={opacity}
+                      onChange={(e) => onOpacity(Number(e.target.value))}
+                    />
+                  </label>
+                  <p>
+                    {tr("heat.resolution", {
+                      m: String(
+                        area.grid.widthM / Math.sqrt(area.cells.length),
+                      ),
+                    })}
+                  </p>
+                </details>
                 <details>
                   <summary>{tr("heat.cells")}</summary>
                   <div className="heat-cells">
@@ -192,10 +243,14 @@ export function MycoAreaControls({
                       <button
                         className="button secondary"
                         key={c.id}
-                        disabled={c.score === null}
                         onClick={() => onCell(i)}
                       >
-                        {i + 1}: {c.score ?? "—"}/100
+                        {i + 1}:{" "}
+                        {c.status === "unsuitable"
+                          ? `▧ ${tr("heat.unsuitable")}`
+                          : c.status === "insufficientData"
+                            ? `? ${tr("heat.insufficient")}`
+                            : `${c.score}/100`}
                       </button>
                     ))}
                   </div>
@@ -211,7 +266,7 @@ export function MycoAreaControls({
             </>
           )}
           <small>
-            {tr("eco.legacyMap")} · {tr("heat.privacy")}
+            {tr("heat.disclaimer")} {tr("heat.privacy")}
           </small>
         </>
       )}

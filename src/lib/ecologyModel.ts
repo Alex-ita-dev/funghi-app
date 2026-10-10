@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { speciesProfiles, type SpeciesProfile, type Curve } from "./mycoScore";
-export const ecologyVersion = "mycoscore-2.1.0";
+export const ecologyVersion = "mycoscore-2.1.1";
 export const covers = [
   "water",
   "trees",

@@ -3041,6 +3041,7 @@ textarea:focus-visible {
 }
 .heat-legend {
   display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
   gap: 6px;
   font-size: 12px;
 }
@@ -3078,3 +3079,8 @@ textarea:focus-visible {
 .ecology-details h3 { margin-top: 16px; }
 .ecology-details p, .ecology-details small { line-height: 1.5; }
 .ecology-sources { font-size: 12px; line-height: 1.6; overflow-wrap: anywhere; }
+
+.myco-area > strong {
+  display: block;
+  margin-bottom: 8px;
+}

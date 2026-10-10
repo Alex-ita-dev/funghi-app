@@ -20,7 +20,7 @@ import { optionalSoilProvider, type SoilProvider } from "./ecologySoil";
 import { boundedCache } from "./mycoCache";
 import { requestPool } from "./sharedRequest";
 import type { CellSample } from "./mycoAnalysis";
-const snapshotSchema = z.object({
+export const snapshotSchema = z.object({
   algorithmVersion: z.literal(ecologyVersion),
   profile: z.enum(["generic", "porcini", "chanterelles"]),
   land: landSchema,
@@ -72,6 +72,16 @@ export async function loadEcology(
       : false,
     result: computeEcology({ ...data, point, now }),
   });
+  // The area already contains the exact point input, including exclusions and missing data.
+  // A tap is read-only: explicit Retry can request missing/refreshed providers.
+  if (
+    seed &&
+    seed.algorithmVersion === ecologyVersion &&
+    landKey(seed.point) === landKey(point) &&
+    (!navigator.onLine ||
+      now - new Date(seed.analysisDate).getTime() < CACHE_TTL)
+  )
+    return finish({ ...seed, profile }, true);
   if (
     stored &&
     (!navigator.onLine ||
@@ -93,10 +103,14 @@ export async function loadEcology(
       cached = land.cached;
     if (!habitat.hard) {
       const rows = await Promise.allSettled([
-        seed &&
-        now - seed.environment.data.fetchedAt <
+        seed?.environment &&
+        now - seed.environment.fetchedAt <
           (navigator.onLine ? CACHE_TTL : CACHE_MAX_AGE)
-          ? Promise.resolve(seed.environment)
+          ? Promise.resolve({
+              data: seed.environment,
+              cached: true,
+              stale: false,
+            })
           : loadEnvironment(point, sharedSignal, now),
         seed
           ? Promise.resolve([seed.terrain])

@@ -1,3 +1,4 @@
+import { countRequest } from "./mycoMetrics";
 export async function environmentalJson(
   url: string,
   signal: AbortSignal,
@@ -8,6 +9,7 @@ export async function environmentalJson(
   signal.addEventListener("abort", abort, { once: true });
   const timer = setTimeout(abort, 12000);
   try {
+    countRequest(signal, url);
     const response = await fetch(url, {
       signal: controller.signal,
       credentials: "omit",

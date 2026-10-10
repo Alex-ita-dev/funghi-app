@@ -630,11 +630,23 @@ export default {
   "myco.factor.postRain": "Temps depuis la pluie",
   "myco.factor.drying": "Dessèchement",
   "myco.factor.humidity": "Humidité de l’air",
+  "heat.analysis": "Analyse",
+  "heat.hide": "Masquer la carte",
+  "heat.mapTitle": "Carte MycoScore",
+  "heat.newArea": "Analyser une nouvelle zone",
+  "heat.clear": "Supprimer l’analyse actuelle",
+  "heat.unsuitable": "Zone inadaptée",
+  "heat.insufficient": "Données insuffisantes",
+  "heat.quality":
+    "Les données manquent pour la majorité des cellules. Vous pouvez réessayer.",
+  "heat.disclaimer":
+    "La carte indique la compatibilité des conditions environnementales, pas la présence certaine de champignons.",
+  "heat.age": "Données actualisées il y a {{min}} min",
   "heat.title": "Afficher la carte des conditions",
   "heat.analyze": "Analyser cette zone",
   "heat.refresh": "Actualiser l’analyse",
   "heat.cancel": "Annuler",
-  "heat.area": "Zone {{km}} × {{km}} km · {{n}} cellules",
+  "heat.area": "Zone analysée : ~{{km}} km² · {{n}} cellules",
   "heat.zoom":
     "Rapprochez-vous de la zone à analyser. Indisponible près des pôles ou de l’antiméridien.",
   "heat.progress":
@@ -647,14 +659,14 @@ export default {
   "heat.opacity": "Opacité",
   "heat.cells": "Cellules et scores (accès clavier)",
   "heat.resolution":
-    "Les cellules proches partagent la météo ; MNE Copernicus d’environ 90 m. Elles ne représentent ni des mesures locales ni une présence certaine de champignons.",
+    "Cellules de {{m}} m : échantillons environnementaux, sans précision au mètre. La confiance modifie uniquement l’opacité.",
   "heat.partial":
     "Analyse partielle : certaines cellules ou données du terrain sont indisponibles. Gris = données insuffisantes.",
   "heat.flat": "Exposition non significative sur un terrain presque plat.",
   "heat.formula":
     "Heuristique v2 non validée biologiquement. La météo v1 conserve 87–90 % du poids ; terrain et saison sont secondaires. Les poids absents sont exclus puis renormalisés.",
   "heat.privacy":
-    "L’analyse envoie uniquement les coordonnées de la grille à Open-Meteo.",
+    "L’analyse envoie les coordonnées de la grille aux fournisseurs environnementaux.",
   "myco.factor.slope": "Pente",
   "myco.factor.aspect": "Exposition et assèchement",
   "myco.factor.season": "Saison (heuristique)",

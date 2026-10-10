@@ -624,11 +624,23 @@ export default {
   "myco.factor.postRain": "Time since rain",
   "myco.factor.drying": "Drying",
   "myco.factor.humidity": "Air humidity",
+  "heat.analysis": "Analysis",
+  "heat.hide": "Hide map",
+  "heat.mapTitle": "MycoScore map",
+  "heat.newArea": "Analyze new area",
+  "heat.clear": "Delete current analysis",
+  "heat.unsuitable": "Unsuitable area",
+  "heat.insufficient": "Insufficient data",
+  "heat.quality":
+    "Most cells have insufficient data. You can retry the analysis.",
+  "heat.disclaimer":
+    "The map models environmental compatibility, not the certain presence of mushrooms.",
+  "heat.age": "Data updated {{min}} min ago",
   "heat.title": "Show conditions map",
   "heat.analyze": "Analyze this area",
   "heat.refresh": "Update analysis",
   "heat.cancel": "Cancel",
-  "heat.area": "Area {{km}} × {{km}} km · {{n}} zones",
+  "heat.area": "Analysis area: ~{{km}} km² · {{n}} cells",
   "heat.zoom":
     "Zoom in on the area to analyze. Unavailable near the poles or the date line.",
   "heat.progress": "Analyzing conditions… {{n}} / {{total}} zones analyzed",
@@ -639,13 +651,13 @@ export default {
   "heat.opacity": "Opacity",
   "heat.cells": "Zones and scores (keyboard access)",
   "heat.resolution":
-    "Nearby cells share weather; Copernicus DEM is about 90 m. Cells are not local measurements or certain mushroom presence.",
+    "{{m}} m cells: environmental samples, not meter-level precision. Confidence only changes opacity.",
   "heat.partial":
     "Partial analysis: some cells or terrain data are unavailable. Gray = insufficient data.",
   "heat.flat": "Aspect is not meaningful on nearly flat ground.",
   "heat.formula":
     "V2 heuristic, not biologically validated. V1 weather retains 87–90% of the weight; terrain and season are secondary. Missing data weights are excluded and renormalized.",
-  "heat.privacy": "Analysis sends only grid coordinates to Open-Meteo.",
+  "heat.privacy": "Analysis sends grid coordinates to environmental providers.",
   "myco.factor.slope": "Slope",
   "myco.factor.aspect": "Aspect and drying",
   "myco.factor.season": "Season (heuristic)",

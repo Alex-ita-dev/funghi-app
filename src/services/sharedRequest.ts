@@ -1,3 +1,4 @@
+import { inheritMetrics } from "./mycoMetrics";
 // Reference-counted deduplication: aborting one subscriber cannot cancel another.
 export function requestPool<T>() {
   const pending = new Map<
@@ -13,6 +14,7 @@ export function requestPool<T>() {
     let entry = pending.get(key);
     if (!entry || entry.controller.signal.aborted) {
       const controller = new AbortController();
+      inheritMetrics(signal, controller.signal);
       entry = {
         controller,
         promise: Promise.resolve().then(() => task(controller.signal)),

@@ -298,8 +298,7 @@ export function computeEcology(input: EcologyInput) {
     { id: "soil", score: soilScore },
   ].map((f) => ({ ...f, weight: p.weights[f.id as keyof typeof p.weights] }));
   const available = factors.filter((f) => f.score !== null);
-  const weatherAvailable =
-    moisture !== null || temperature !== null || drying !== null;
+  const weatherAvailable = moisture !== null && temperature !== null;
   // Geometric combination prevents high rain/air compensating a fundamentally hostile soil.
   const weight = available.reduce((s, f) => s + f.weight, 0);
   const conditions =

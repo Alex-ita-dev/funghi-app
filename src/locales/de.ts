@@ -630,11 +630,23 @@ export default {
   "myco.factor.postRain": "Zeit seit Regen",
   "myco.factor.drying": "Austrocknung",
   "myco.factor.humidity": "Luftfeuchte",
+  "heat.analysis": "Analyse",
+  "heat.hide": "Karte ausblenden",
+  "heat.mapTitle": "MycoScore-Karte",
+  "heat.newArea": "Neues Gebiet analysieren",
+  "heat.clear": "Aktuelle Analyse löschen",
+  "heat.unsuitable": "Ungeeignetes Gebiet",
+  "heat.insufficient": "Unzureichende Daten",
+  "heat.quality":
+    "Für die meisten Zellen fehlen Daten. Sie können die Analyse wiederholen.",
+  "heat.disclaimer":
+    "Die Karte zeigt geeignete Umweltbedingungen, kein sicheres Pilzvorkommen.",
+  "heat.age": "Daten vor {{min}} Min. aktualisiert",
   "heat.title": "Bedingungskarte anzeigen",
   "heat.analyze": "Dieses Gebiet analysieren",
   "heat.refresh": "Analyse aktualisieren",
   "heat.cancel": "Abbrechen",
-  "heat.area": "Gebiet {{km}} × {{km}} km · {{n}} Zellen",
+  "heat.area": "Analysegebiet: ~{{km}} km² · {{n}} Zellen",
   "heat.zoom":
     "Vergrößere das gewünschte Gebiet. Nahe den Polen oder der Datumsgrenze nicht verfügbar.",
   "heat.progress":
@@ -647,14 +659,15 @@ export default {
   "heat.opacity": "Deckkraft",
   "heat.cells": "Zellen und Werte (Tastaturzugriff)",
   "heat.resolution":
-    "Benachbarte Zellen teilen Wetterdaten; Copernicus-DEM etwa 90 m. Zellen sind keine lokalen Messungen oder sicheren Pilzfunde.",
+    "Zellen von {{m}} m: Umweltstichproben, keine metergenaue Vorhersage. Konfidenz ändert nur die Deckkraft.",
   "heat.partial":
     "Teilweise Analyse: Einige Zellen oder Geländedaten fehlen. Grau = unzureichende Daten.",
   "heat.flat":
     "Auf fast ebenem Gelände ist die Ausrichtung nicht aussagekräftig.",
   "heat.formula":
     "Biologisch nicht validierte V2-Heuristik. V1-Wetter behält 87–90 % Gewicht; Gelände und Saison sind nachrangig. Fehlende Gewichte werden ausgeschlossen und neu normiert.",
-  "heat.privacy": "Die Analyse sendet nur Rasterkoordinaten an Open-Meteo.",
+  "heat.privacy":
+    "Die Analyse sendet Rasterkoordinaten an Umweltdatenanbieter.",
   "myco.factor.slope": "Neigung",
   "myco.factor.aspect": "Ausrichtung und Austrocknung",
   "myco.factor.season": "Saison (Heuristik)",

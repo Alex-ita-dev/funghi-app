@@ -627,11 +627,23 @@ export default {
   "myco.factor.postRain": "Tiempo desde la lluvia",
   "myco.factor.drying": "Desecación",
   "myco.factor.humidity": "Humedad del aire",
+  "heat.analysis": "Análisis",
+  "heat.hide": "Ocultar mapa",
+  "heat.mapTitle": "Mapa MycoScore",
+  "heat.newArea": "Analizar nueva zona",
+  "heat.clear": "Eliminar análisis actual",
+  "heat.unsuitable": "Zona no apta",
+  "heat.insufficient": "Datos insuficientes",
+  "heat.quality":
+    "Faltan datos en la mayoría de las celdas. Puedes repetir el análisis.",
+  "heat.disclaimer":
+    "El mapa indica compatibilidad ambiental, no presencia segura de setas.",
+  "heat.age": "Datos actualizados hace {{min}} min",
   "heat.title": "Mostrar mapa de condiciones",
   "heat.analyze": "Analizar esta zona",
   "heat.refresh": "Actualizar análisis",
   "heat.cancel": "Cancelar",
-  "heat.area": "Área {{km}} × {{km}} km · {{n}} zonas",
+  "heat.area": "Área analizada: ~{{km}} km² · {{n}} celdas",
   "heat.zoom":
     "Acércate a la zona que deseas analizar. No disponible cerca de los polos o del antimeridiano.",
   "heat.progress": "Analizando condiciones… {{n}} / {{total}} zonas analizadas",
@@ -642,14 +654,14 @@ export default {
   "heat.opacity": "Opacidad",
   "heat.cells": "Zonas y puntuaciones (acceso por teclado)",
   "heat.resolution":
-    "Las celdas cercanas comparten datos meteorológicos; DEM Copernicus de unos 90 m. No son medidas locales ni presencia segura de hongos.",
+    "Celdas de {{m}} m: muestras ambientales, sin precisión de un metro. La confianza solo cambia la opacidad.",
   "heat.partial":
     "Análisis parcial: faltan algunas celdas o datos del terreno. Gris = datos insuficientes.",
   "heat.flat": "La orientación no es significativa en terreno casi llano.",
   "heat.formula":
     "Heurística v2 sin validación biológica. El tiempo v1 conserva el 87–90 % del peso; terreno y estación son secundarios. Los pesos ausentes se excluyen y renormalizan.",
   "heat.privacy":
-    "El análisis envía solo las coordenadas de la cuadrícula a Open-Meteo.",
+    "El análisis envía coordenadas de la cuadrícula a proveedores ambientales.",
   "myco.factor.slope": "Pendiente",
   "myco.factor.aspect": "Orientación y secado",
   "myco.factor.season": "Estación (heurística)",

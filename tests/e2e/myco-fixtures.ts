@@ -36,12 +36,19 @@ export async function mockLand(page: Page, code = 2) {
   await page.route("https://ic.imagery1.arcgis.com/**/getSamples?**", (route) =>
     route.fulfill({
       json: {
-        samples: Array.from({ length: 9 }, (_, locationId) => ({
-          locationId,
-          value: String(code),
-          resolution: 10,
-          attributes: { Year: 2025 },
-        })),
+        samples: Array.from(
+          {
+            length: JSON.parse(
+              new URL(route.request().url()).searchParams.get("geometry")!,
+            ).points.length,
+          },
+          (_, locationId) => ({
+            locationId,
+            value: String(code),
+            resolution: 10,
+            attributes: { Year: 2025 },
+          }),
+        ),
       },
     }),
   );
