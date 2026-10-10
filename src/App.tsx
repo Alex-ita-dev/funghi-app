@@ -1,6 +1,6 @@
 import { MycoAreaControls } from "./components/MycoAreaControls";
 import type { Viewport } from "./lib/mycoArea";
-import type { Profile } from "./lib/mycoScoreV2";
+import type { EcologyProfileId as Profile } from "./lib/ecologyModel";
 import {
   cellSample,
   type AreaAnalysis,

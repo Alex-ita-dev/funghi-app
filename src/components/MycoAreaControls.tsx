@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { usePreferences } from "../hooks/usePreferences";
 import { createGrid, scoreColors, type Viewport } from "../lib/mycoArea";
-import type { Profile } from "../lib/mycoScoreV2";
+import type { EcologyProfileId as Profile } from "../lib/ecologyModel";
 import {
   analyzeArea,
   cachedArea,
@@ -46,14 +46,14 @@ export function MycoAreaControls({
   }
   function toggle() {
     if (shown) cancel();
-    else if (grid && !area) {
+    else if (grid && !area && profile !== "chanterelles") {
       const cached = cachedArea(grid, profile);
       if (cached) onArea(cached);
     }
     onShown(!shown);
   }
   async function analyze() {
-    if (!grid) return;
+    if (!grid || profile === "chanterelles") return;
     cancel();
     const current = new AbortController();
     controller.current = current;
@@ -87,20 +87,27 @@ export function MycoAreaControls({
           <select
             value={profile}
             disabled={busy}
-            onChange={(e) => onProfile(e.target.value as Profile)}
+            onChange={(e) => {
+              const next = e.target.value as Profile;
+              onProfile(next);
+              if (next === "chanterelles") onShown(false);
+            }}
           >
             <option value="generic">{tr("myco.generic")}</option>
             <option value="porcini">{tr("myco.porcini")}</option>
+            <option value="chanterelles">{tr("myco.chanterelles")}</option>
           </select>
         </label>
         <button
           className="button secondary"
           aria-pressed={shown}
+          disabled={profile === "chanterelles"}
           onClick={toggle}
         >
           {tr("heat.title")}
         </button>
       </div>
+      <small>{tr("eco.legacyMap")}</small>
       {shown && (
         <>
           <div className="heat-actions">
@@ -204,7 +211,7 @@ export function MycoAreaControls({
             </>
           )}
           <small>
-            {tr("myco.subtitle")} · {tr("heat.privacy")}
+            {tr("eco.legacyMap")} · {tr("heat.privacy")}
           </small>
         </>
       )}

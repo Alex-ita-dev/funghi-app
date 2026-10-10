@@ -10,6 +10,9 @@ export const daySchema = z.object({
   soil: value,
   moisture: value,
   et0: value,
+  vpd: value.optional(),
+  wind: value.optional(),
+  radiation: value.optional(),
 });
 export const environmentSchema = z.object({
   version: z.literal(1),

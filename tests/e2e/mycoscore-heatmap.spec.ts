@@ -1,7 +1,10 @@
 import { test, expect } from "@playwright/test";
 import { seedLegacy, readRecord } from "./fixtures";
-import { weather } from "./myco-fixtures";
+import { weather, mockLand } from "./myco-fixtures";
 test.use({ serviceWorkers: "block" });
+test.beforeEach(async ({ page }) => {
+  await mockLand(page);
+});
 test("explicit batched heatmap, cell detail, cached offline reload and journal isolation", async ({
   page,
 }, info) => {
@@ -51,6 +54,7 @@ test("explicit batched heatmap, cell detail, cached offline reload and journal i
   await map.click({ position: { x: box!.width / 2, y: box!.height / 2 } });
   const dialog = page.getByRole("dialog", { name: "MycoScore", exact: true });
   await expect(dialog.getByTestId("myco-score")).toContainText(/\d+ \/ 100/);
+  await dialog.getByText("Mostra dettagli", { exact: true }).click();
   await expect(
     dialog.getByText("Pendenza", { exact: true }).locator(".."),
   ).toContainText("11,3°");
