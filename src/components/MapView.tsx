@@ -83,11 +83,22 @@ export default function MapView(props: Props) {
     previewPane.style.zIndex = "349";
     previewPane.style.pointerEvents = "none";
     m.on("click", (e: L.LeafletMouseEvent) => {
+      const point = e.latlng.wrap();
+      // Higher canvases (GPS, tracks, selected point) can receive the DOM event.
+      // Resolve the grid here instead of depending on the heat canvas being topmost.
+      const index = latest.current.area?.grid.cells.findIndex(
+        (cell) =>
+          point.lat >= cell.bounds[0][0] &&
+          point.lat <= cell.bounds[1][0] &&
+          point.lng >= cell.bounds[0][1] &&
+          point.lng <= cell.bounds[1][1],
+      );
+      if (index !== undefined && index >= 0) {
+        latest.current.onCell?.(index);
+        return;
+      }
       if (latest.current.picking)
-        latest.current.onPick({
-          lat: e.latlng.wrap().lat,
-          lng: e.latlng.wrap().lng,
-        });
+        latest.current.onPick({ lat: point.lat, lng: point.lng });
     });
     const remember = () => {
       const center = m.getCenter().wrap();
@@ -118,9 +129,8 @@ export default function MapView(props: Props) {
       const rectangle = L.rectangle(area.grid.cells[i].bounds, {
         renderer,
         ...cellStyle(cell, latest.current.areaOpacity ?? 0.35),
-        bubblingMouseEvents: false,
+        interactive: false,
       });
-      rectangle.on("click", () => latest.current.onCell?.(i));
       rectangle.addTo(group);
       return rectangle;
     });

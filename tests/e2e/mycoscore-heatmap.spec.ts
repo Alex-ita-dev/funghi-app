@@ -1,6 +1,6 @@
 import { test, expect } from "@playwright/test";
 import { seedLegacy, readRecord } from "./fixtures";
-import { weather, mockLand } from "./myco-fixtures";
+import { heatmapWeather, mockLand } from "./myco-fixtures";
 test.use({ serviceWorkers: "block" });
 test.beforeEach(async ({ page }) => {
   await mockLand(page);
@@ -76,8 +76,8 @@ test("explicit batched heatmap, cell detail, cached offline reload and journal i
       json: u.pathname.endsWith("elevation")
         ? { elevation: lats.map((lat) => 612 + (lat - 43.52) * 111320 * 0.2) }
         : lats.length === 1
-          ? weather()
-          : lats.map(() => weather()),
+          ? heatmapWeather()
+          : lats.map(() => heatmapWeather()),
     });
   });
   await page.goto("/");

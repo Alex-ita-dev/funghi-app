@@ -366,3 +366,30 @@ it("native land batches use location IDs across cells; missing samples never shi
       .mock.calls.filter(([url]) => String(url).includes("getSamples")),
   ).toHaveLength(1);
 });
+
+it("the browser fixture deliberately distinguishes Porcini and Chanterelles score/classification", async () => {
+  const { heatmapWeather } = await import("./e2e/myco-fixtures");
+  const { parseEnvironment } = await import("../src/services/mycoEnvironment");
+  const current = Date.now();
+  const input = {
+    point,
+    land: {
+      category: "trees" as const,
+      neighbors: ["trees" as const],
+      provider: "io-esri-2025" as const,
+      year: 2025,
+      resolutionM: 10,
+      fetchedAt: current,
+      cached: false,
+    },
+    terrain: { elevationM: 612, slopeDegrees: 11.3, aspectDegrees: 180 },
+    soil: null,
+    environment: parseEnvironment(heatmapWeather(), point, current),
+    analysisDate: new Date(current).toISOString(),
+    now: current,
+  };
+  const p = computeEcology({ ...input, profile: "porcini" });
+  const c = computeEcology({ ...input, profile: "chanterelles" });
+  expect(p.score).not.toBe(c.score);
+  expect(p.classification).not.toBe(c.classification);
+});

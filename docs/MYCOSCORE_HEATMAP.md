@@ -60,7 +60,7 @@ Offline si può riaprire un'area compatibile conservata, incluso il dettaglio, c
 
 ## Rendering, accessibilità e dettaglio
 
-Un renderer **Leaflet Canvas**, massimo 100 rettangoli `L.Path`, nessun componente React complesso sovrapposto per cella. Pane analisi z-index **350**, anteprima non interattiva **349**; tracce/GPS nel pane overlay 400, marker auto/ritrovamenti sopra. L'anteprima ha `pointer-events:none` e non intercetta i tap delle celle. Nascondere smonta renderer e hit handler senza toccare dati, GPS o layer di base. Topografica, satellite, outdoor e stradale non vengono modificati.
+Un renderer **Leaflet Canvas**, massimo 100 rettangoli `L.Path`, nessun componente React complesso sovrapposto per cella. Pane analisi z-index **350**, anteprima non interattiva **349**; tracce/GPS nel pane overlay 400, marker auto/ritrovamenti sopra. L'anteprima ha `pointer-events:none` e non intercetta i tap delle celle. La selezione cella è risolta dal click della mappa con i bounds: i canvas superiori di GPS/tracce/marker non provocano una nuova analisi puntuale al posto del dettaglio cached. Nascondere smonta il renderer senza toccare dati, GPS o layer di base. Topografica, satellite, outdoor e stradale non vengono modificati.
 
 Ogni cella ha score nullable, confidence numerica e stato `valid | unsuitable | insufficientData`. `uncertain` e `insufficient` del motore sono presentati come dati insufficienti, preservando la distinzione nel dettaglio completo.
 

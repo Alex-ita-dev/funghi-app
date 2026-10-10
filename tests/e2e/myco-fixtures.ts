@@ -56,3 +56,11 @@ export async function mockLand(page: Page, code = 2) {
     route.fulfill({ json: { type: "FeatureCollection", features: [] } }),
   );
 }
+
+// Warm soil is outside the Chanterelles plateau; unlike the shared ideal fixture,
+// it intentionally exercises species-dependent scores and classifications.
+export function heatmapWeather() {
+  const data = weather();
+  data.hourly.soil_temperature_6cm.fill(21);
+  return data;
+}
