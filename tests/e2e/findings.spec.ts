@@ -1,9 +1,12 @@
 import { test, expect } from "@playwright/test";
 import { seedLegacy, readRecord } from "./fixtures";
-test.use({ serviceWorkers: "block" });
+// This full photo lifecycle includes browser startup, image processing and several reloads.
+// Keep individual actions bounded so a larger end-to-end budget cannot hide a stuck UI.
+test.use({ serviceWorkers: "block", actionTimeout: 10000 });
 test("finding photos survive reload, edit, backup restore and deletion", async ({
   page,
 }) => {
+  test.setTimeout(60000);
   page.on("console", (message) => {
     if (message.type() === "error" && message.text().startsWith("Local save failed:"))
       console.error(message.text());
