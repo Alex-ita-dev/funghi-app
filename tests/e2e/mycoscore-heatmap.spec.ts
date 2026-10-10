@@ -8,6 +8,35 @@ test.beforeEach(async ({ page }) => {
 test("explicit batched heatmap, cell detail, cached offline reload and journal isolation", async ({
   page,
 }, info) => {
+  // Full area/detail/species/offline/GPS lifecycle; each assertion retains its normal timeout.
+  test.setTimeout(60000);
+  await page.addInitScript(() => {
+    (window as any).heatGpsCalls = 0;
+    Object.defineProperty(navigator, "geolocation", {
+      configurable: true,
+      value: {
+        getCurrentPosition(ok: PositionCallback) {
+          (window as any).heatGpsCalls++;
+          ok({
+            coords: {
+              latitude: 43.52,
+              longitude: 11.48,
+              accuracy: 8,
+              altitude: null,
+              altitudeAccuracy: null,
+              heading: null,
+              speed: null,
+            },
+            timestamp: Date.now(),
+          });
+        },
+        watchPosition() {
+          return 1;
+        },
+        clearWatch() {},
+      },
+    });
+  });
   await seedLegacy(page);
   let landCalls = 0;
   await page.route("https://ic.imagery1.arcgis.com/**", (route) => {
@@ -73,6 +102,22 @@ test("explicit batched heatmap, cell detail, cached offline reload and journal i
   await expect(
     controls.getByText("Legenda MycoScore", { exact: true }),
   ).toBeVisible();
+  const dialog = page.getByRole("dialog", { name: "MycoScore", exact: true });
+  await controls
+    .getByText("Zone e punteggi (accesso da tastiera)", { exact: true })
+    .click();
+  const waterCell = controls.getByRole("button", {
+    name: /^1:.*Area non idonea/,
+  });
+  await expect(waterCell).toBeVisible();
+  await waterCell.click();
+  await expect(dialog.getByTestId("myco-status")).toHaveText("Area non idonea");
+  await expect(dialog.getByTestId("myco-score")).toHaveCount(0);
+  await dialog.getByRole("button", { name: "Chiudi", exact: true }).click();
+  await controls
+    .getByText("Zone e punteggi (accesso da tastiera)", { exact: true })
+    .click();
+  await controls.screenshot({ path: info.outputPath("heatmap-controls.png") });
   const count = calls;
   const landCount = landCalls;
   await page.getByLabel("Mappa interattiva").scrollIntoViewIfNeeded();
@@ -83,7 +128,6 @@ test("explicit batched heatmap, cell detail, cached offline reload and journal i
   const map = page.getByLabel("Mappa interattiva"),
     box = await map.boundingBox();
   await map.click({ position: { x: box!.width / 2, y: box!.height / 2 } });
-  const dialog = page.getByRole("dialog", { name: "MycoScore", exact: true });
   await expect(dialog.getByTestId("myco-score")).toContainText(/\d+ \/ 100/);
   const porciniScore = await dialog.getByTestId("myco-score").innerText();
   await dialog.getByText("Mostra dettagli", { exact: true }).click();
@@ -115,6 +159,14 @@ test("explicit batched heatmap, cell detail, cached offline reload and journal i
   await expect(
     page.getByRole("button", { name: "Centra sulla mia posizione" }),
   ).toBeVisible();
+  await page
+    .getByRole("button", { name: "Centra sulla mia posizione" })
+    .click();
+  await expect
+    .poll(() => page.evaluate(() => (window as any).heatGpsCalls))
+    .toBeGreaterThan(0);
+  await expect(page.getByLabel("Mappa interattiva")).toBeVisible();
+  expect(calls).toBe(count);
   expect(await readRecord(page, "main")).toEqual(before);
   await page.reload();
   await page.evaluate(() =>

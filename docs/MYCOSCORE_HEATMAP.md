@@ -44,6 +44,8 @@ Le fasi sono separate: la loro concorrenza non si somma. **Concorrenza heatmap 4
 
 Esri associa tramite `locationId`, mai tramite posizione nella risposta: un NoData omesso non sposta i risultati delle altre celle. Il WFS marino rimane puntuale: non viene inventato un batch non supportato. Il batch meteo verifica il numero di risposte e valida ogni anchor separatamente.
 
+Sonda pubblica di sviluppo: batch Esri di 72 punti vicino a 43,52°N /11,48°E, risposta con 72 campioni, ID0–71, anno2025, nessun errore. Conferma tecnica del batching, non validazione della mappa ecologica sul campo.
+
 Fonti delle capacità native: [Esri Get Samples](https://developers.arcgis.com/rest/services-reference/enterprise/get-samples/), [Open-Meteo forecast](https://open-meteo.com/en/docs), [elevation API](https://open-meteo.com/en/docs/elevation-api). Attribuzioni sulla mappa. Stesse condizioni, limiti e privacy dei provider descritti in v2.1; nessuna telemetria remota.
 
 ## Cache e offline
