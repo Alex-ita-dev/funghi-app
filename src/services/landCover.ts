@@ -6,7 +6,7 @@ import {
   type LandCover,
 } from "../lib/ecologyModel";
 import type { Coordinate } from "../lib/model";
-import { offset } from "../lib/mycoArea";
+import { areaConfig, offset } from "../lib/mycoArea";
 import { boundedCache } from "./mycoCache";
 import { environmentalJson } from "./mycoHttp";
 import { requestPool } from "./sharedRequest";
@@ -24,6 +24,11 @@ export interface LandCoverProvider {
     signal: AbortSignal,
     now: number,
   ): Promise<LandCover>;
+  sampleMany?(
+    points: Coordinate[],
+    signal: AbortSignal,
+    now: number,
+  ): Promise<LandCover[]>;
 }
 const classes: Record<number, LandClass> = {
   1: "water",
@@ -72,17 +77,72 @@ export function parseLandCover(raw: unknown, now: number): LandCover {
     cached: false,
   };
 }
+async function marineFallback(
+  point: Coordinate,
+  land: LandCover,
+  signal: AbortSignal,
+  now: number,
+): Promise<LandCover> {
+  // NoData is NOT water. Only an independent marine polygon intersection can establish it.
+  if (
+    land.category === "unknown" &&
+    !land.neighbors.some((c) => c !== "unknown")
+  ) {
+    const params = new URLSearchParams({
+      service: "WFS",
+      version: "1.0.0",
+      request: "GetFeature",
+      typeName: "MarineRegions:goas",
+      outputFormat: "application/json",
+      cql_filter: `INTERSECTS(the_geom,POINT(${point.lng.toFixed(6)} ${point.lat.toFixed(6)}))`,
+      propertyName: "name",
+      maxFeatures: "1",
+    });
+    try {
+      const data = z
+        .object({
+          type: z.literal("FeatureCollection"),
+          features: z
+            .array(
+              z.object({
+                type: z.literal("Feature"),
+                properties: z.object({ name: z.string().min(1) }),
+              }),
+            )
+            .max(1),
+        })
+        .parse(await environmentalJson(`${MARINE_URL}?${params}`, signal));
+      if (data.features.length)
+        land = {
+          category: "water",
+          neighbors: [],
+          provider: "marine-goas-2021",
+          year: 2021,
+          resolutionM: null,
+          fetchedAt: now,
+          cached: false,
+        };
+    } catch {
+      signal.throwIfAborted();
+    }
+  }
+  return land;
+}
 export const esriLandCover: LandCoverProvider = {
   id: "io-esri-2025+goas-v1",
   async sample(point, signal, now) {
-    const neighbors = [
+    return (await this.sampleMany!([point], signal, now))[0];
+  },
+  async sampleMany(points, signal, now) {
+    if (points.length > areaConfig.landBatch) throw new Error("eco.landError");
+    const neighbors = points.flatMap((point) => [
       point,
       ...[-1, 0, 1].flatMap((y) =>
         [-1, 0, 1]
           .filter((x) => x !== 0 || y !== 0)
           .map((x) => offset(point, x * 10, y * 10)),
       ),
-    ];
+    ]);
     const params = new URLSearchParams({
       f: "json",
       geometryType: "esriGeometryMultipoint",
@@ -99,59 +159,46 @@ export const esriLandCover: LandCoverProvider = {
       interpolation: "RSP_NearestNeighbor",
       pixelSize: "10,10",
     });
-    let land = unknownLand(now);
+    let lands = points.map(() => unknownLand(now));
     try {
-      land = parseLandCover(
-        await environmentalJson(`${LAND_COVER_URL}?${params}`, signal),
-        now,
-      );
+      const raw = z
+        .object({
+          samples: z
+            .array(
+              samplesSchema.shape.samples.element.extend({
+                locationId: z
+                  .number()
+                  .int()
+                  .min(0)
+                  .max(neighbors.length - 1),
+              }),
+            )
+            .max(neighbors.length),
+        })
+        .parse(await environmentalJson(`${LAND_COVER_URL}?${params}`, signal));
+      lands = points.map((_, i) => {
+        try {
+          return parseLandCover(
+            {
+              samples: raw.samples
+                .filter((s) => Math.floor(s.locationId / 9) === i)
+                .map((s) => ({ ...s, locationId: s.locationId % 9 })),
+            },
+            now,
+          );
+        } catch {
+          return unknownLand(now);
+        }
+      });
     } catch {
       signal.throwIfAborted();
     }
-    // NoData is NOT water. Only an independent marine polygon intersection can establish it.
-    if (
-      land.category === "unknown" &&
-      !land.neighbors.some((c) => c !== "unknown")
-    ) {
-      const params = new URLSearchParams({
-        service: "WFS",
-        version: "1.0.0",
-        request: "GetFeature",
-        typeName: "MarineRegions:goas",
-        outputFormat: "application/json",
-        cql_filter: `INTERSECTS(the_geom,POINT(${point.lng.toFixed(6)} ${point.lat.toFixed(6)}))`,
-        propertyName: "name",
-        maxFeatures: "1",
-      });
-      try {
-        const data = z
-          .object({
-            type: z.literal("FeatureCollection"),
-            features: z
-              .array(
-                z.object({
-                  type: z.literal("Feature"),
-                  properties: z.object({ name: z.string().min(1) }),
-                }),
-              )
-              .max(1),
-          })
-          .parse(await environmentalJson(`${MARINE_URL}?${params}`, signal));
-        if (data.features.length)
-          land = {
-            category: "water",
-            neighbors: [],
-            provider: "marine-goas-2021",
-            year: 2021,
-            resolutionM: null,
-            fetchedAt: now,
-            cached: false,
-          };
-      } catch {
-        signal.throwIfAborted();
-      }
+    // Sequential fallback inside each bounded batch; never fan out extra requests.
+    for (let i = 0; i < points.length; i++) {
+      signal.throwIfAborted();
+      lands[i] = await marineFallback(points[i], lands[i], signal, now);
     }
-    return land;
+    return lands;
   },
 };
 const cache = boundedCache(
@@ -193,4 +240,53 @@ export function loadLandCover(
       cache.putMany([{ key, at: now, data }], now);
     return data;
   });
+}
+
+// Genuine ArcGIS MultiPoint batching; point and area share the same static cache.
+export async function loadLandCovers(
+  points: Coordinate[],
+  signal: AbortSignal,
+  now = Date.now(),
+): Promise<LandCover[]> {
+  signal.throwIfAborted();
+  if (points.length > areaConfig.maxCells) throw new Error("eco.landError");
+  const provider = esriLandCover;
+  const known = new Map(
+    cache.entries(now).map((row) => [row.key, { ...row.data, cached: true }]),
+  );
+  const key = (p: Coordinate) => `${provider.id}:${landKey(p)}`;
+  const missing = [
+    ...new Map(
+      points.filter((p) => !known.has(key(p))).map((p) => [key(p), p]),
+    ).entries(),
+  ];
+  let cursor = 0;
+  async function worker() {
+    while (cursor < missing.length && navigator.onLine) {
+      signal.throwIfAborted();
+      const chunk = missing.slice(cursor, cursor + areaConfig.landBatch);
+      cursor += areaConfig.landBatch;
+      const values = await provider.sampleMany!(
+        chunk.map(([, p]) => p),
+        signal,
+        now,
+      );
+      signal.throwIfAborted();
+      const rows = chunk.map(([key], i) => ({
+        key,
+        at: now,
+        data: values[i] ?? unknownLand(now),
+      }));
+      rows.forEach((r) => known.set(r.key, r.data));
+      cache.putMany(
+        rows.filter((r) => r.data.category !== "unknown"),
+        now,
+      );
+    }
+  }
+  await Promise.all(
+    Array.from({ length: areaConfig.heatmapConcurrency }, worker),
+  );
+  signal.throwIfAborted();
+  return points.map((p) => known.get(key(p)) ?? unknownLand(now));
 }

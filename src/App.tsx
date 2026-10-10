@@ -865,6 +865,7 @@ function Journal() {
                   onProfile={setMycoProfile}
                   area={mycoArea}
                   onArea={setMycoArea}
+                  onClear={() => setMycoArea(null)}
                   shown={mycoShown}
                   onShown={setMycoShown}
                   opacity={mycoOpacity}
@@ -892,6 +893,7 @@ function Journal() {
                   onViewport={setMycoViewport}
                   area={mycoMode && !pick && mycoShown ? mycoArea : null}
                   areaOpacity={mycoOpacity}
+                  preview={mycoMode && !pick && mycoShown ? mycoViewport : null}
                   onCell={openMycoCell}
                   onPick={(coordinate) => {
                     if (pick) {

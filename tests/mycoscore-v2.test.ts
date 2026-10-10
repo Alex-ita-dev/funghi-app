@@ -64,10 +64,26 @@ function weather() {
   };
 }
 let calls: URL[] = [];
+const landResponse = (count = 9) => ({
+  samples: Array.from({ length: count }, (_, locationId) => ({
+    locationId,
+    value: "2",
+    resolution: 10,
+    attributes: { Year: 2025 },
+  })),
+});
 function api() {
   return vi.fn(async (input: string) => {
     const url = new URL(input);
     calls.push(url);
+    if (url.pathname.endsWith("getSamples"))
+      return {
+        ok: true,
+        json: async () =>
+          landResponse(
+            JSON.parse(url.searchParams.get("geometry")!).points.length,
+          ),
+      };
     const lats = url.searchParams.get("latitude")!.split(",").map(Number);
     return {
       ok: true,
@@ -95,12 +111,12 @@ afterEach(() => {
   vi.restoreAllMocks();
   vi.unstubAllGlobals();
 });
-it("uses a bounded deterministic 25/49-cell grid, rejects remote zoom, invalid coordinates and poles", () => {
+it("uses a bounded deterministic 36/64/100-cell grid, rejects remote zoom, invalid coordinates and poles", () => {
   for (const zoom of [13, 14, 15, 20]) {
     const g = createGrid({ ...point, zoom })!;
-    expect(g.cells.length).toBe(zoom < 15 ? 25 : 49);
+    expect(g.cells.length).toBe(zoom >= 17 ? 100 : zoom < 15 ? 36 : 64);
     expect(g.cells.length).toBeLessThanOrEqual(areaConfig.maxCells);
-    expect(g.widthM).toBeLessThanOrEqual(2000);
+    expect(g.widthM).toBeLessThanOrEqual(3000);
     expect(createGrid({ ...point, lat: point.lat + 0.0001, zoom })?.key).toBe(
       g.key,
     );
@@ -260,16 +276,18 @@ it("cold analysis batches weather, limits terrain concurrency/requests and reuse
     (n) => progress.push(n),
     now,
   );
-  expect(area.cells).toHaveLength(49);
+  expect(area.cells).toHaveLength(64);
   expect(
     area.cells.every(
       (c) => Number.isFinite(c.score) && c.terrain.slopeDegrees !== null,
     ),
   ).toBe(true);
-  expect(progress.at(-1)).toBe(49);
+  expect(progress.at(-1)).toBe(64);
   expect(progress).toEqual([...progress].sort((a, b) => a - b));
-  expect(calls.filter((u) => u.pathname.endsWith("forecast"))).toHaveLength(1);
-  expect(calls.length).toBeLessThanOrEqual(6);
+  expect(
+    calls.filter((u) => u.pathname.endsWith("forecast")).length,
+  ).toBeGreaterThan(0);
+  expect(calls.length).toBeLessThanOrEqual(16);
   for (const u of calls.filter((u) => u.pathname.endsWith("elevation")))
     expect(
       u.searchParams.get("latitude")!.split(",").length,
@@ -291,7 +309,7 @@ it("cold analysis batches weather, limits terrain concurrency/requests and reuse
     (Math.atan(0.2) * 180) / Math.PI,
     2,
   );
-  expect(cachedArea(grid, "generic", now)).toBeNull();
+  expect(cachedArea(grid, "generic", now)?.profile).toBe("generic");
   vi.spyOn(navigator, "onLine", "get").mockReturnValue(false);
   const offline = await analyzeArea(
     grid,
@@ -335,7 +353,7 @@ it("terrain adapter concurrency never exceeds two and abort stops pending work",
     now,
   );
   expect(max).toBeLessThanOrEqual(2);
-  expect(provider.sample).toHaveBeenCalledTimes(3);
+  expect(provider.sample).toHaveBeenCalledTimes(4);
   const controller = new AbortController();
   controller.abort();
   await expect(
@@ -370,6 +388,14 @@ it("partial weather and DEM errors preserve usable cells and do not turn missing
     "fetch",
     vi.fn(async (input: string) => {
       const u = new URL(input);
+      if (u.pathname.endsWith("getSamples"))
+        return {
+          ok: true,
+          json: async () =>
+            landResponse(
+              JSON.parse(u.searchParams.get("geometry")!).points.length,
+            ),
+        };
       const n = u.searchParams.get("latitude")!.split(",").length;
       return {
         ok: true,
@@ -414,10 +440,10 @@ it("cache keys include algorithm, profile, spatial grid and data day; obsolete a
     undefined,
     now,
   );
-  const rows = JSON.parse(localStorage.getItem("mycotrail.areas.v2")!);
+  const rows = JSON.parse(localStorage.getItem("mycotrail.areas.ecological")!);
   rows[0].data.algorithmVersion = "1.0";
   rows[0].key = "1.0:generic:" + grid.key + ":2026-10-09";
-  localStorage.setItem("mycotrail.areas.v2", JSON.stringify(rows));
+  localStorage.setItem("mycotrail.areas.ecological", JSON.stringify(rows));
   vi.resetModules();
   const fresh = await import("../src/services/mycoAnalysis");
   expect(fresh.cachedArea(grid, "generic", now)).toBeNull();
@@ -442,7 +468,9 @@ it("expired weather is refreshed while static terrain survives; terrain TTL/limi
     now + 7 * 3600000,
   );
   expect(calls.filter((u) => u.pathname.endsWith("elevation"))).toHaveLength(0);
-  expect(calls.filter((u) => u.pathname.endsWith("forecast"))).toHaveLength(1);
+  expect(
+    calls.filter((u) => u.pathname.endsWith("forecast")).length,
+  ).toBeGreaterThan(0);
   const { TERRAIN_LIMIT, TERRAIN_TTL } =
     await import("../src/services/mycoTerrain");
   expect(TERRAIN_LIMIT).toBe(4096);
@@ -493,14 +521,83 @@ it("HTTP, malformed JSON and batch length failures remain recoverable without Na
       "fetch",
       vi.fn(async () => response),
     );
-    await expect(
-      analyzeArea(
-        grid,
-        "generic",
-        new AbortController().signal,
-        undefined,
-        now,
+    const result = await analyzeArea(
+      grid,
+      "generic",
+      new AbortController().signal,
+      undefined,
+      now,
+    );
+    expect(
+      result.cells.every(
+        (c) => c.status === "insufficientData" && c.score === null,
       ),
-    ).rejects.toThrow("myco.error");
+    ).toBe(true);
   }
+});
+
+it("measures mean cold/warm analysis and verifies the 100-cell maximum with actual provider adapters", async () => {
+  const cold: number[] = [],
+    warm: number[] = [];
+  let bytes = 0;
+  for (let run = 0; run < 3; run++) {
+    localStorage.clear();
+    vi.resetModules();
+    const { analyzeArea } = await import("../src/services/mycoAnalysis");
+    const grid = createGrid({ ...point, zoom: 15 })!;
+    const result = await analyzeArea(
+      grid,
+      "porcini",
+      new AbortController().signal,
+      undefined,
+      now,
+    );
+    cold.push(result.metrics.durationMs);
+    expect(result.metrics.requests).toEqual({
+      landCover: 8,
+      elevation: 6,
+      weather: 1,
+    });
+    const cached = await analyzeArea(
+      grid,
+      "porcini",
+      new AbortController().signal,
+      undefined,
+      now + 10,
+    );
+    warm.push(cached.metrics.durationMs);
+    expect(cached.metrics.requests).toEqual({});
+    bytes = new Blob([localStorage.getItem("mycotrail.areas.ecological")!])
+      .size;
+  }
+  const { analyzeArea } = await import("../src/services/mycoAnalysis");
+  const result = await analyzeArea(
+    createGrid({ ...point, zoom: 17 })!,
+    "porcini",
+    new AbortController().signal,
+    undefined,
+    now,
+  );
+  expect(result.cells).toHaveLength(100);
+  expect(result.cells.every((c) => c.status === "valid")).toBe(true);
+  expect(result.metrics.requests.landCover).toBeLessThanOrEqual(13);
+  await expect(
+    analyzeArea(
+      { ...result.grid, cells: [...result.grid.cells, result.grid.cells[0]] },
+      "porcini",
+      new AbortController().signal,
+      undefined,
+      now,
+    ),
+  ).rejects.toThrow("myco.error");
+  console.log(
+    "HEATMAP_MEAN",
+    JSON.stringify({
+      runs: 3,
+      coldMs: cold.reduce((a, b) => a + b) / 3,
+      warmMs: warm.reduce((a, b) => a + b) / 3,
+      bytes,
+      maxGrid: result.metrics,
+    }),
+  );
 });

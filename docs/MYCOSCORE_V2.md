@@ -1,5 +1,7 @@
 # MycoScore v2 — condizioni locali, non presenza certa
 
+> Documento storico: l’overlay descritto qui è sostituito dalla [Mappa MycoScore ecologica](MYCOSCORE_HEATMAP.md), che usa il motore v2.1 condiviso.
+
 `algorithmVersion = 2.0.0`. La v2 estende il motore deterministico v1, senza riscriverne le curve meteo. Non è un modello AI né una previsione biologicamente validata. Non stima presenza, quantità, commestibilità o sicurezza dei funghi. Non utilizzare colori o pendenze per valutare la sicurezza di un itinerario.
 
 ## Uso e area

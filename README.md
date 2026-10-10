@@ -97,11 +97,11 @@ Ritrovamenti e foto locali: [schema, backup e limiti](docs/FINDING_PHOTOS_DETAIL
 
 MycoScore puntuale: [formula, dati e limiti v1](docs/MYCOSCORE_V1.md).
 
-### MycoScore v2: mappa locale delle condizioni
+### Mappa MycoScore: condizioni ecologiche locali
 
-Dalla modalità MycoScore, **Mostra mappa condizioni → Analizza questa zona** analizza esplicitamente 25–49 celle (massimo 4 km²). Overlay Canvas Leaflet, profili Generico/Porcini, terreno Copernicus con pendenza/esposizione, annullamento e cache offline. Nessun ricalcolo automatico durante pan/zoom. Non garantisce presenza o commestibilità dei funghi. Il servizio pubblico Open-Meteo è soggetto ai suoi limiti e alle condizioni per uso non commerciale; non richiede MapTiler key.
+In MycoScore scegli Generico, Porcini o Finferli, mostra la mappa condizioni e premi **Analizza questa zona**. Anteprima locale di 1–9 km², griglia adattiva 36–100 celle, esclusioni habitat prima del meteo, batching e concorrenza limitata. Canvas Leaflet, legenda accessibile, confidence separata, annullamento, opacità e cache offline. Pan e zoom non avviano richieste. Cambiare specie riusa gli input; toccare una cella apre la scheda puntuale senza nuovi fetch quando i dati sono freschi.
 
-Formula, richieste, cache, privacy e limiti: [docs/MYCOSCORE_V2.md](docs/MYCOSCORE_V2.md). Il motore meteo [v1](docs/MYCOSCORE_V1.md) resta la base; GPS, tracce, fotografie e database delle uscite sono indipendenti.
+Area e punto usano **lo stesso motore ecologico v2.1.1**. [UX, provider, cache, prestazioni e limiti](docs/MYCOSCORE_HEATMAP.md). La mappa indica compatibilità ambientale, non presenza certa di funghi. GPS, tracce, fotografie e database delle uscite restano indipendenti. La [documentazione v2](docs/MYCOSCORE_V2.md) descrive l'implementazione storica sostituita.
 
 ### MycoScore v2.1: analisi ecologica puntuale
 
@@ -109,6 +109,6 @@ Scegli **Generico, Porcini o Finferli** e tocca un punto. Prima del meteo vengon
 
 Il nuovo motore riusa meteo e DEM esistenti; integra habitat, plausibilità geografica prudente, stagione/quota/clima, distribuzione della pioggia, suolo ed essiccamento. L'affidabilità è separata dal punteggio. Dettagli espandibili, sei lingue, unità personali e cache offline. Nuove fonti: Sentinel-2 Land Cover 2025 (Impact Observatory/Microsoft/Esri, 10 m) e Marine Regions come verifica marina nei vuoti del raster; nessuna chiave richiesta. SoilGrids non viene interrogato mentre il servizio REST è sospeso.
 
-**L'overlay v2 esistente resta un indice meteo/terreno senza verifica dell'habitat**, indicato nell'interfaccia; non è la heatmap del motore ecologico. Aprire una cella avvia il nuovo dettaglio puntuale, con verifica habitat e riuso dei dati disponibili. Finferli è disponibile solo per i punti. Nessuna nuova scansione o migrazione dati.
+La mappa ecologica ora usa lo stesso motore puntuale, anche per Finferli. La patch v2.1.1 richiede umidità e temperatura calcolabili per mostrare uno score; riusa i dati raw delle versioni precedenti.
 
 Formula, parametri, privacy, richieste (tipicamente 3 al primo tap, 0 in cache), differenza tra osservazioni/proxy/euristiche e limiti: [MYCOSCORE_V2_1_ECOLOGY.md](docs/MYCOSCORE_V2_1_ECOLOGY.md). Nessuna garanzia di presenza, quantità, commestibilità o sicurezza; modello non validato sul campo.

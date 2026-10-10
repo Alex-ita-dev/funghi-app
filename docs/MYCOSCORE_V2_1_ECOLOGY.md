@@ -1,6 +1,6 @@
 # MycoScore v2.1 — indice ecologico puntuale
 
-Base: `main` dopo PR #5 (`5680090`). Versione algoritmo: **`mycoscore-2.1.0`**. Non è probabilità di raccolta, modello AI, identificazione o indicazione di commestibilità/sicurezza. Non è stato validato con osservazioni di fruttificazione sul campo. I numeri sono parametri progettuali iniziali, non coefficienti stimati dalla letteratura.
+Base: `main` dopo PR #5 (`5680090`). Versione originaria: **`mycoscore-2.1.0`**. Aggiornamento heatmap: **`mycoscore-2.1.1`**, soglia minima umidità + temperatura; vedere [mappa ecologica](MYCOSCORE_HEATMAP.md). Non è probabilità di raccolta, modello AI, identificazione o indicazione di commestibilità/sicurezza. Non è stato validato con osservazioni di fruttificazione sul campo. I numeri sono parametri progettuali iniziali, non coefficienti stimati dalla letteratura.
 
 ## Riutilizzo e flusso
 
@@ -13,7 +13,7 @@ Si conservano aggregazione e curve [v1](MYCOSCORE_V1.md), DEM, cache e overlay [
 
 `src/lib/ecologyModel.ts` centralizza tipi/profili/versione; `src/lib/mycoEcology.ts` contiene formule pure. `src/services/landCover.ts`, `ecologySoil.ts` e `mycoEcology.ts` gestiscono adapter e orchestrazione. `sharedRequest.ts` deduplica richieste identiche con conteggio dei sottoscrittori. La stessa `MycoScoreCard` serve punti e celle.
 
-L'overlay v2 già su main resta disponibile come **indice meteo/terreno senza habitat**, esplicitato nella UI. Non viene convertito in una heatmap ecologica né esegue 49 interrogazioni land cover. Un tap su una cella verifica il suo habitat e riusa meteo/DEM freschi, poi calcola v2.1; pertanto il dettaglio può differire dal vecchio colore. Finferli è solo puntuale. La futura heatmap ecologica dovrà riusare questo motore e progettare il batching della copertura.
+La [mappa ecologica](MYCOSCORE_HEATMAP.md) sostituisce ora l’overlay meteo v2: batching land cover, stessa formula puntuale, Generico/Porcini/Finferli e dettaglio da snapshot senza richieste aggiuntive. Le note seguenti documentano l’introduzione del motore; i dettagli aggiornati della pipeline area e delle sue cache sono nella nuova documentazione.
 
 GPS, watchPosition, filtri, segmenti, pause, checkpoint, uscite, ritorno auto, foto, IndexedDB e backup non cambiano. Nessuna migrazione dati o richiesta di compilare habitat/quota/meteo.
 
@@ -205,4 +205,4 @@ Unit test con servizi mockati: Adriatico/lago, Sahara nudo, piazza edificata, ne
 
 E2E mockati desktop Chromium, iPhone WebKit e Android360px: risultato/stati esclusi, Finferli, dettagli chiusi, DEM opzionale fallito, cache dopo riapertura/offline, unità e invarianza journal/GPS; conservate prove overlay v2. Le prove geografiche automatiche verificano risposte controllate, non la correttezza universale della classificazione satellitare. Sonde manuali sui servizi pubblici hanno controllato classi Sahara/edificato, NoData marino, intersezione Adriatico, assenza intersezione terrestre e CORS, senza dati privati.
 
-Comandi: `npm run typecheck`, `npm test`, `npm run build`, `npm run test:e2e`. Esiti e limiti esecutivi effettivi nella PR. Non sono implementati heatmap ecologica, apprendimento, distribuzioni specie dettagliate, riconoscimento immagini, previsioni future o sincronizzazione.
+Comandi: `npm run typecheck`, `npm test`, `npm run build`, `npm run test:e2e`. Esiti e limiti esecutivi effettivi nella PR. Non sono implementati apprendimento, distribuzioni specie dettagliate, riconoscimento immagini, previsioni future o sincronizzazione.

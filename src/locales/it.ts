@@ -626,11 +626,23 @@ export default {
   "myco.factor.postRain": "Tempo dalla pioggia",
   "myco.factor.drying": "Essiccamento",
   "myco.factor.humidity": "Umidità dell’aria",
+  "heat.analysis": "Analisi",
+  "heat.hide": "Nascondi mappa",
+  "heat.mapTitle": "Mappa MycoScore",
+  "heat.newArea": "Analizza nuova area",
+  "heat.clear": "Elimina analisi corrente",
+  "heat.unsuitable": "Area non idonea",
+  "heat.insufficient": "Dati insufficienti",
+  "heat.quality":
+    "Dati insufficienti in gran parte della zona. Puoi riprovare l’analisi.",
+  "heat.disclaimer":
+    "La mappa indica compatibilità delle condizioni ambientali, non presenza certa di funghi.",
+  "heat.age": "Dati aggiornati {{min}} min fa",
   "heat.title": "Mostra mappa condizioni",
   "heat.analyze": "Analizza questa zona",
   "heat.refresh": "Aggiorna analisi",
   "heat.cancel": "Annulla",
-  "heat.area": "Area {{km}} × {{km}} km · {{n}} zone",
+  "heat.area": "Area analizzata: ~{{km}} km² · {{n}} celle",
   "heat.zoom":
     "Avvicinati alla zona da analizzare. Analisi non disponibile vicino ai poli o all’antimeridiano.",
   "heat.progress": "Analisi condizioni… {{n}} / {{total}} zone analizzate",
@@ -641,14 +653,14 @@ export default {
   "heat.opacity": "Opacità",
   "heat.cells": "Zone e punteggi (accesso da tastiera)",
   "heat.resolution":
-    "Meteo condiviso tra celle vicine; DEM Copernicus di circa 90 m. Le celle non rappresentano misure locali né presenza certa di funghi.",
+    "Celle di {{m}} m: campioni ambientali, non precisione al metro. La confidence riduce solo l’opacità.",
   "heat.partial":
     "Analisi parziale: alcune celle o dati del terreno non sono disponibili. Grigio = dati insufficienti.",
   "heat.flat": "Esposizione non significativa: terreno quasi pianeggiante.",
   "heat.formula":
     "Euristica v2, non validata biologicamente. Il meteo della v1 mantiene l’87–90% del peso; terreno e stagione hanno un contributo secondario. I pesi dei dati assenti vengono esclusi e rinormalizzati.",
   "heat.privacy":
-    "L’analisi invia solo le coordinate della griglia a Open-Meteo.",
+    "L’analisi invia coordinate della griglia ai fornitori ambientali.",
   "myco.factor.slope": "Pendenza",
   "myco.factor.aspect": "Esposizione ed essiccamento",
   "myco.factor.season": "Stagione (euristica)",

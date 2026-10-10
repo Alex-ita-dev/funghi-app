@@ -1,4 +1,9 @@
-import { scoreColor, type Viewport } from "../lib/mycoArea";
+import {
+  cellStyle,
+  createGrid,
+  gridBounds,
+  type Viewport,
+} from "../lib/mycoArea";
 import type { AreaAnalysis } from "../services/mycoAnalysis";
 import { usePreferences } from "../hooks/usePreferences";
 import { useEffect, useRef, useState } from "react";
@@ -32,6 +37,7 @@ type Props = {
   onViewport?: (v: Viewport) => void;
   area?: AreaAnalysis | null;
   areaOpacity?: number;
+  preview?: Viewport | null;
   onCell?: (index: number) => void;
   onPick: (p: Coordinate) => void;
   onFind: (p: Find) => void;
@@ -73,12 +79,26 @@ export default function MapView(props: Props) {
     map.current = m;
     layers.current = L.layerGroup().addTo(m);
     m.createPane("mycoHeat").style.zIndex = "350";
+    const previewPane = m.createPane("mycoPreview");
+    previewPane.style.zIndex = "349";
+    previewPane.style.pointerEvents = "none";
     m.on("click", (e: L.LeafletMouseEvent) => {
+      const point = e.latlng.wrap();
+      // Higher canvases (GPS, tracks, selected point) can receive the DOM event.
+      // Resolve the grid here instead of depending on the heat canvas being topmost.
+      const index = latest.current.area?.grid.cells.findIndex(
+        (cell) =>
+          point.lat >= cell.bounds[0][0] &&
+          point.lat <= cell.bounds[1][0] &&
+          point.lng >= cell.bounds[0][1] &&
+          point.lng <= cell.bounds[1][1],
+      );
+      if (index !== undefined && index >= 0) {
+        latest.current.onCell?.(index);
+        return;
+      }
       if (latest.current.picking)
-        latest.current.onPick({
-          lat: e.latlng.wrap().lat,
-          lng: e.latlng.wrap().lng,
-        });
+        latest.current.onPick({ lat: point.lat, lng: point.lng });
     });
     const remember = () => {
       const center = m.getCenter().wrap();
@@ -103,19 +123,14 @@ export default function MapView(props: Props) {
     const renderer = L.canvas({ pane: "mycoHeat", padding: 0.3 }).addTo(m);
     const group = L.layerGroup().addTo(m);
     const attribution =
-      '<a href="https://open-meteo.com/en/docs/elevation-api" target="_blank" rel="noreferrer">Open-Meteo / Copernicus DEM</a>';
+      '<a href="https://open-meteo.com/en/docs/elevation-api" target="_blank" rel="noreferrer">Open-Meteo / Copernicus DEM</a> · <a href="https://livingatlas.arcgis.com/landcover/" target="_blank" rel="noreferrer">IO / Esri Sentinel-2</a> · <a href="https://www.marineregions.org/" target="_blank" rel="noreferrer">Marine Regions</a>';
     m.attributionControl.addAttribution(attribution);
     heatLayers.current = area.cells.map((cell, i) => {
       const rectangle = L.rectangle(area.grid.cells[i].bounds, {
         renderer,
-        color: scoreColor(cell.score),
-        fillColor: scoreColor(cell.score),
-        weight: 1,
-        opacity: 0.7,
-        fillOpacity: latest.current.areaOpacity ?? 0.35,
-        bubblingMouseEvents: false,
+        ...cellStyle(cell, latest.current.areaOpacity ?? 0.35),
+        interactive: false,
       });
-      rectangle.on("click", () => latest.current.onCell?.(i));
       rectangle.addTo(group);
       return rectangle;
     });
@@ -128,10 +143,29 @@ export default function MapView(props: Props) {
     };
   }, [props.area]);
   useEffect(() => {
-    heatLayers.current.forEach((layer) =>
-      layer.setStyle({ fillOpacity: props.areaOpacity ?? 0.35 }),
-    );
-  }, [props.areaOpacity]);
+    heatLayers.current.forEach((layer, i) => {
+      const cell = props.area?.cells[i];
+      if (cell) layer.setStyle(cellStyle(cell, props.areaOpacity ?? 0.35));
+    });
+  }, [props.areaOpacity, props.area]);
+  useEffect(() => {
+    const m = map.current,
+      grid = props.preview ? createGrid(props.preview) : null;
+    if (!m || !grid) return;
+    const renderer = L.canvas({ pane: "mycoPreview", padding: 0.3 }).addTo(m);
+    const outline = L.rectangle(gridBounds(grid), {
+      renderer,
+      color: "#315cbd",
+      weight: 3,
+      dashArray: "10 7",
+      fillOpacity: 0.03,
+      interactive: false,
+    }).addTo(m);
+    return () => {
+      outline.remove();
+      renderer.remove();
+    };
+  }, [props.preview?.lat, props.preview?.lng, props.preview?.zoom]);
   useEffect(() => {
     if (!map.current) return;
     const zoom = L.control

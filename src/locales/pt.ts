@@ -627,11 +627,22 @@ export default {
   "myco.factor.postRain": "Tempo desde a chuva",
   "myco.factor.drying": "Secagem",
   "myco.factor.humidity": "Humidade do ar",
+  "heat.analysis": "Análise",
+  "heat.hide": "Ocultar mapa",
+  "heat.mapTitle": "Mapa MycoScore",
+  "heat.newArea": "Analisar nova área",
+  "heat.clear": "Excluir análise atual",
+  "heat.unsuitable": "Área inadequada",
+  "heat.insufficient": "Dados insuficientes",
+  "heat.quality": "Faltam dados na maioria das células. Pode tentar novamente.",
+  "heat.disclaimer":
+    "O mapa indica compatibilidade ambiental, não a presença certa de cogumelos.",
+  "heat.age": "Dados atualizados há {{min}} min",
   "heat.title": "Mostrar mapa de condições",
   "heat.analyze": "Analisar esta área",
   "heat.refresh": "Atualizar análise",
   "heat.cancel": "Cancelar",
-  "heat.area": "Área {{km}} × {{km}} km · {{n}} zonas",
+  "heat.area": "Área analisada: ~{{km}} km² · {{n}} células",
   "heat.zoom":
     "Aproxime a área a analisar. Indisponível perto dos polos ou do antimeridiano.",
   "heat.progress": "Analisando condições… {{n}} / {{total}} zonas analisadas",
@@ -642,14 +653,14 @@ export default {
   "heat.opacity": "Opacidade",
   "heat.cells": "Zonas e pontuações (acesso por teclado)",
   "heat.resolution":
-    "Células próximas compartilham meteorologia; DEM Copernicus de cerca de 90 m. Não são medições locais nem presença garantida de cogumelos.",
+    "Células de {{m}} m: amostras ambientais, sem precisão de um metro. A confiança altera apenas a opacidade.",
   "heat.partial":
     "Análise parcial: algumas células ou dados do terreno estão indisponíveis. Cinza = dados insuficientes.",
   "heat.flat": "Exposição não significativa em terreno quase plano.",
   "heat.formula":
     "Heurística v2 sem validação biológica. O tempo v1 mantém 87–90% do peso; terreno e estação são secundários. Pesos ausentes são excluídos e renormalizados.",
   "heat.privacy":
-    "A análise envia apenas as coordenadas da grade ao Open-Meteo.",
+    "A análise envia coordenadas da grade aos fornecedores ambientais.",
   "myco.factor.slope": "Inclinação",
   "myco.factor.aspect": "Exposição e secagem",
   "myco.factor.season": "Estação (heurística)",
